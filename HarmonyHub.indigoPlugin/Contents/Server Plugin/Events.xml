@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<Events>
+	<SupportURL>http://forums.indigodomo.com/viewtopic.php?f=177</SupportURL>
+    <Event id="hubMessage">
+        <Name>Update message from Harmony Hub</Name>
+    </Event>
+</Events>
+
+

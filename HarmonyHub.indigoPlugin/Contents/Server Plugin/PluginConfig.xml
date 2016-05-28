@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<PluginConfig>
+	<SupportURL>http://forums.indigodomo.com/viewtopic.php?f=177</SupportURL>
+	<Field id="updateFrequency" type="textfield" defaultValue="24">
+		<Label>Check for plugin update frequency (hours):</Label>
+	</Field>
+	<Field id="messageNote" type="label" fontSize="small" fontColor="darkgray">
+		<Label>The plugin will not check for updates if the frequency is set to zero.</Label>
+	</Field>
+	<Field id="sep1" type="separator"/>
+	<Field id="updaterEmail" type="textfield">
+		<Label>Email:</Label>
+	</Field>
+	<Field id="updaterEmailsEnabled" type="checkbox" defaultValue="true">
+		<Label>Email Update Notifications:</Label>
+	</Field>
+	<Field id="sep2" type="separator"/>
+	<Field id="showDebugInfo" type="checkbox">
+		<Label>Enable debugging:</Label>
+		<Description>(not recommended)</Description>
+	</Field>
+</PluginConfig>

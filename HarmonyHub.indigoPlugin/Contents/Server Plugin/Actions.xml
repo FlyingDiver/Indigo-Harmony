@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<Actions>
+	<SupportURL>http://forums.indigodomo.com/viewtopic.php?f=177</SupportURL>
+	<Action id="startActivity" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+		<Name>Start Activity</Name>
+        <CallbackMethod>startActivity</CallbackMethod>
+		<ConfigUI>
+			<Field id="activity" type="menu">
+				<Label>Activities:</Label>
+				<List class="self" filter="" method="activityListGenerator"/>
+			</Field>
+		</ConfigUI>
+	</Action>
+	<Action id="powerOff" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+		<Name>Power Off</Name>
+        <CallbackMethod>powerOff</CallbackMethod>
+	</Action>
+	<Action id="setChannel" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+		<Name>Change Channel</Name>
+        <CallbackMethod>setChannel</CallbackMethod>
+		<ConfigUI>
+			<Field id="channel" type="textfield">
+				<Label>Channel:</Label>
+			</Field>
+		</ConfigUI>
+	</Action>
+</Actions>
