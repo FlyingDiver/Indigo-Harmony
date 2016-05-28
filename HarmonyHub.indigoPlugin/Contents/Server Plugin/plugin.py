@@ -34,8 +34,8 @@ class HubClient(object):
 		self.client = harmony_client.create_and_connect_client(self.harmony_ip, self.harmony_port, self.session_token)
 
 		self.client.add_event_handler("session_start", self.session_start)
-#		self.client.add_event_handler("stanza", self.stanza)
-#		self.client.add_event_handler("message", self.message)
+		self.client.add_event_handler("stanza", self.stanza)
+		self.client.add_event_handler("message", self.message)
 
 #		self.client.process(block=False)
 	
@@ -43,13 +43,18 @@ class HubClient(object):
 		self.config = self.client.get_config()
 		self.current_activity_id = self.client.get_current_activity()
 		for activity in self.config["activity"]:
-			self.activityList[activity[u'id']] = {'label': activity[u'label'], 'type': activity[u'type'] }
-			if self.current_activity_id == int(activity[u'id']):
-				self.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
-				self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
-				self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'] + '  *Active*')
+			if activity["id"] == "-1":
+				pass
 			else:
-				self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'])
+				action = json.loads(activity["controlGroup"][0]["function"][0]["action"])			
+				soundDev = action["deviceId"]						
+				self.activityList[activity[u'id']] = {'label': activity[u'label'], 'type': activity[u'type'], 'soundDev': soundDev }
+				if self.current_activity_id == int(activity[u'id']):
+					self.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
+					self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
+					self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'] + '  *Active*')
+				else:
+					self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'])
 
 	def session_start(self, data):
 		self.plugin.debugLog(self.device.name + u": session_start, data = " + str(event))
@@ -57,12 +62,12 @@ class HubClient(object):
 #		self.client.get_roster()
 #		self.client.process(block=False)
 	
-#	def stanza(self, data):
-#		self.plugin.debugLog(self.device.name + u": stanza, data = " + str(stanza))
+	def stanza(self, data):
+		self.plugin.debugLog(self.device.name + u": stanza, data = " + str(stanza))
 #		self.client.process(block=False)
 	
-#	def message(self, data):
-#		self.plugin.debugLog(self.device.name + u": message, data = " + str(msg))
+	def message(self, data):
+		self.plugin.debugLog(self.device.name + u": message, data = " + str(msg))
 #		self.client.process(block=False)
 	
 ################################################################################
@@ -92,16 +97,11 @@ class Plugin(indigo.PluginBase):
 		
 		# Need to subscribe to device changes here so we can call the refreshDeviceList method
 		# in case there was a change or deletion of a device that's published
-		indigo.devices.subscribeToChanges()
-
-		# set up the XMPP client here
-		
+		indigo.devices.subscribeToChanges()		
 		
 							
 	def shutdown(self):
 		indigo.server.log(u"Shutting down Harmony Hub")
-
-		# close the XMPP client here
 
 
 	def runConcurrentThread(self):
@@ -113,13 +113,16 @@ class Plugin(indigo.PluginBase):
 				
 				for id, hub in self.hubDict.items():
 					self.debugLog(hub.device.name + u": checking current activity")
-					hub.current_activity_id = hub.client.get_current_activity()
-					for activity in hub.config["activity"]:
-						if hub.current_activity_id == int(activity[u'id']):
-							hub.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
-							hub.device.updateStateOnServer(key="activityName", value=activity[u'label'])
-							break
-						
+					try:
+						hub.current_activity_id = hub.client.get_current_activity()
+					except:
+						pass
+					else:
+						for activity in hub.config["activity"]:
+							if hub.current_activity_id == int(activity[u'id']):
+								hub.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
+								hub.device.updateStateOnServer(key="activityName", value=activity[u'label'])
+								break	
 
 				# Plugin Update check
 				
@@ -257,22 +260,43 @@ class Plugin(indigo.PluginBase):
 		self.debugLog(hubDevice.name + u": Start Activity - " + activityLabel)
 		hub.client.start_activity(int(activityID))
 
-
 	def powerOff(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		client = self.hubDict[int(hubDevice.id)].client
-
 		self.debugLog(hubDevice.name + u": Power Off")
 		client.start_activity(-1)
 
-	def setChannel(self, pluginAction):
+	def volumeMute(self, pluginAction):
+		hubDevice = indigo.devices[pluginAction.deviceId]
+		hub = self.hubDict[int(hubDevice.id)]
+		client = hub.client
+		soundDev = hub.activityList[str(hub.current_activity_id)]["soundDev"]
+		self.debugLog(hubDevice.name + u": sending Mute to " + soundDev)
+		client.send_command(soundDev, "Mute")
+		
+	def volumeDown(self, pluginAction):
+		hubDevice = indigo.devices[pluginAction.deviceId]
+		hub = self.hubDict[int(hubDevice.id)]
+		client = hub.client
+		soundDev = hub.activityList[str(hub.current_activity_id)]["soundDev"]
+		self.debugLog(hubDevice.name + u": sending VolumeDown to " + soundDev)
+		client.send_command(soundDev, "VolumeDown")
+		
+	def volumeUp(self, pluginAction):
+		hubDevice = indigo.devices[pluginAction.deviceId]
+		hub = self.hubDict[int(hubDevice.id)]
+		client = hub.client
+		soundDev = hub.activityList[str(hub.current_activity_id)]["soundDev"]
+		self.debugLog(hubDevice.name + u": sending VolumeUp to " + soundDev)
+		client.send_command(soundDev, "VolumeUp")
+
+	def sendCommand(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		client = self.hubDict[int(hubDevice.id)].client
-		channel = pluginAction.props["channel"]
-		if '.' not in channel:
-			channel = channel + ".1"
-		self.debugLog(hubDevice.name + u": Change Channel to " + channel)
-		client.change_channel(channel)
+		command = pluginAction.props["command"]
+		device = pluginAction.props["device"]
+		self.debugLog(hubDevice.name + u": sendCommand: " + command + " to " + device)
+		client.send_command(device, command)
 
 	########################################
 	# Menu Methods

@@ -15,12 +15,36 @@
 		<Name>Power Off</Name>
         <CallbackMethod>powerOff</CallbackMethod>
 	</Action>
+	<Action id="volumeMute" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+		<Name>Mute Sound</Name>
+        <CallbackMethod>volumeMute</CallbackMethod>
+	</Action>
+	<Action id="volumeDown" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+		<Name>Volume Down</Name>
+        <CallbackMethod>volumeDown</CallbackMethod>
+	</Action>
+	<Action id="volumeUp" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+		<Name>Volume Up</Name>
+        <CallbackMethod>volumeUp</CallbackMethod>
+	</Action>
 	<Action id="setChannel" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
 		<Name>Change Channel</Name>
         <CallbackMethod>setChannel</CallbackMethod>
 		<ConfigUI>
 			<Field id="channel" type="textfield">
 				<Label>Channel:</Label>
+			</Field>
+		</ConfigUI>
+	</Action>
+	<Action id="sendCommand" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+		<Name>Send Command</Name>
+        <CallbackMethod>sendCommand</CallbackMethod>
+		<ConfigUI>
+			<Field id="device" type="textfield">
+				<Label>Device ID:</Label>
+			</Field>
+			<Field id="command" type="textfield">
+				<Label>Command:</Label>
 			</Field>
 		</ConfigUI>
 	</Action>
