@@ -1,0 +1,398 @@
+Harmony Hub Debug               Activity: Pandora, id: 19815649, order: 1, type: VirtualCdMulti
+  Harmony Hub Debug               	Control Group Volume:
+  Harmony Hub Debug               		Function Mute, label: Mute, action {"command":"Mute","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function VolumeDown, label: Volume Down, action {"command":"VolumeDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function VolumeUp, label: Volume Up, action {"command":"VolumeUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group NavigationBasic:
+  Harmony Hub Debug               		Function DirectionDown, label: Direction Down, action {"command":"DirectionDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DirectionLeft, label: Direction Left, action {"command":"DirectionLeft","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DirectionRight, label: Direction Right, action {"command":"DirectionRight","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DirectionUp, label: Direction Up, action {"command":"DirectionUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Select, label: Select, action {"command":"Enter","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group TransportBasic:
+  Harmony Hub Debug               		Function Play, label: Play, action {"command":"iPod\/UsbPlay","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Pause, label: Pause, action {"command":"iPod\/UsbPause","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group TransportExtended:
+  Harmony Hub Debug               		Function SkipBackward, label: Skip Backward, action {"command":"iPod\/UsbSkipBack","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function SkipForward, label: Skip Forward, action {"command":"iPod\/UsbSkipForward","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group NavigationDVD:
+  Harmony Hub Debug               		Function Back, label: Back, action {"command":"Back","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group NavigationDSTB:
+  Harmony Hub Debug               		Function Favorite, label: Favorite, action {"command":"InputFavorite","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group RadioTuner:
+  Harmony Hub Debug               		Function PrevPreset, label: Prev Preset, action {"command":"PresetPrev","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function ScanDown, label: Scan Down, action {"command":"TuneDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function ScanUp, label: Scan Up, action {"command":"TuneUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function NextPreset, label: Next Preset, action {"command":"PresetNext","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group NavigationExtended:
+  Harmony Hub Debug               		Function Info, label: Info, action {"command":"Info","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function PageDown, label: Page Down, action {"command":"PageDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function PageUp, label: Page Up, action {"command":"PageUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group Setup:
+  Harmony Hub Debug               		Function Sleep, label: Sleep, action {"command":"Sleep","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               Activity: Watch Fire TV, id: 19955177, order: 3, type: VirtualGeneric
+  Harmony Hub Debug               	Control Group Volume:
+  Harmony Hub Debug               		Function Mute, label: Mute, action {"command":"Mute","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function VolumeDown, label: Volume Down, action {"command":"VolumeDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function VolumeUp, label: Volume Up, action {"command":"VolumeUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group NavigationBasic:
+  Harmony Hub Debug               		Function DirectionDown, label: Direction Down, action {"command":"DirectionDown","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function DirectionLeft, label: Direction Left, action {"command":"DirectionLeft","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function DirectionRight, label: Direction Right, action {"command":"DirectionRight","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function DirectionUp, label: Direction Up, action {"command":"DirectionUp","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function Select, label: Select, action {"command":"OK","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group TransportBasic:
+  Harmony Hub Debug               		Function Stop, label: Stop, action {"command":"Stop","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function Play, label: Play, action {"command":"Play","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function Rewind, label: Rewind, action {"command":"Rewind","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function Pause, label: Pause, action {"command":"Pause","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function FastForward, label: Fast Forward, action {"command":"FastForward","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group TransportExtended:
+  Harmony Hub Debug               		Function SkipBackward, label: Skip Backward, action {"command":"SkipBackward","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function SkipForward, label: Skip Forward, action {"command":"SkipForward","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group NavigationDVD:
+  Harmony Hub Debug               		Function Menu, label: Menu, action {"command":"Menu","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function Back, label: Back, action {"command":"Back","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group NavigationDSTB:
+  Harmony Hub Debug               		Function Search, label: Search, action {"command":"Search","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group GameType3:
+  Harmony Hub Debug               		Function SmartMenu, label: Home, action {"command":"Home","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group NavigationExtended:
+  Harmony Hub Debug               		Function Exit, label: Exit, action {"command":"Exit","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function Exit, label: Esc, action {"command":"Exit","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group DisplayMode:
+  Harmony Hub Debug               		Function Aspect, label: Aspect, action {"command":"Wide","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Display, label: Display, action {"command":"Display","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               Activity: Watch Apple TV, id: 19859161, order: 2, type: VirtualGeneric
+  Harmony Hub Debug               	Control Group Volume:
+  Harmony Hub Debug               		Function Mute, label: Mute, action {"command":"Mute","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function VolumeDown, label: Volume Down, action {"command":"VolumeDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function VolumeUp, label: Volume Up, action {"command":"VolumeUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group NavigationBasic:
+  Harmony Hub Debug               		Function DirectionDown, label: Direction Down, action {"command":"DirectionDown","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function DirectionLeft, label: Direction Left, action {"command":"DirectionLeft","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function DirectionRight, label: Direction Right, action {"command":"DirectionRight","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function DirectionUp, label: Direction Up, action {"command":"DirectionUp","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function Select, label: Select, action {"command":"Select","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               	Control Group TransportBasic:
+  Harmony Hub Debug               		Function Stop, label: Stop, action {"command":"Stop","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function Play, label: Play, action {"command":"Play","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function Rewind, label: Rewind, action {"command":"Rewind","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function Pause, label: Pause, action {"command":"Pause","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function FastForward, label: Fast Forward, action {"command":"FastForward","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               	Control Group TransportExtended:
+  Harmony Hub Debug               		Function SkipBackward, label: Skip Backward, action {"command":"SkipBack","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function SkipForward, label: Skip Forward, action {"command":"SkipForward","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               	Control Group NavigationDVD:
+  Harmony Hub Debug               		Function Menu, label: Menu, action {"command":"Menu","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function Back, label: Back, action {"command":"Back","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               	Control Group GameType3:
+  Harmony Hub Debug               		Function Home, label: Home, action {"command":"Home","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               	Control Group DisplayMode:
+  Harmony Hub Debug               		Function Aspect, label: Aspect, action {"command":"Wide","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Display, label: Display, action {"command":"Display","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               Activity: Watch TV, id: 19815644, order: 0, type: VirtualTelevisionN
+  Harmony Hub Debug               	Control Group NumericBasic:
+  Harmony Hub Debug               		Function Dot, label: ., action {"command":".","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number0, label: 0, action {"command":"0","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number1, label: 1, action {"command":"1","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number2, label: 2, action {"command":"2","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number3, label: 3, action {"command":"3","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number4, label: 4, action {"command":"4","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number5, label: 5, action {"command":"5","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number6, label: 6, action {"command":"6","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number7, label: 7, action {"command":"7","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number8, label: 8, action {"command":"8","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number9, label: 9, action {"command":"9","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group Volume:
+  Harmony Hub Debug               		Function Mute, label: Mute, action {"command":"Mute","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function VolumeDown, label: Volume Down, action {"command":"VolumeDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function VolumeUp, label: Volume Up, action {"command":"VolumeUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group Channel:
+  Harmony Hub Debug               		Function PrevChannel, label: Prev Channel, action {"command":"ChannelPrev","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function ChannelDown, label: Channel Down, action {"command":"ChannelDown","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function ChannelUp, label: Channel Up, action {"command":"ChannelUp","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group NavigationBasic:
+  Harmony Hub Debug               		Function DirectionDown, label: Direction Down, action {"command":"DirectionDown","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function DirectionLeft, label: Direction Left, action {"command":"DirectionLeft","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function DirectionRight, label: Direction Right, action {"command":"DirectionRight","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function DirectionUp, label: Direction Up, action {"command":"DirectionUp","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Select, label: Select, action {"command":"Select","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group TransportBasic:
+  Harmony Hub Debug               		Function Stop, label: Stop, action {"command":"Stop","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Play, label: Play, action {"command":"Play","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Rewind, label: Rewind, action {"command":"Rewind","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Pause, label: Pause, action {"command":"Pause","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function FastForward, label: Fast Forward, action {"command":"FastForward","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group TransportExtended:
+  Harmony Hub Debug               		Function SkipBackward, label: Skip Backward, action {"command":"SkipBack","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function SkipForward, label: Skip Forward, action {"command":"SkipForward","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group NavigationDVD:
+  Harmony Hub Debug               		Function Subtitle, label: Subtitle, action {"command":"Subtitle","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Back, label: Back, action {"command":"Back","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group GameType3:
+  Harmony Hub Debug               		Function Home, label: Home, action {"command":"Home","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group NavigationExtended:
+  Harmony Hub Debug               		Function Guide, label: Guide, action {"command":"Guide","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group DisplayMode:
+  Harmony Hub Debug               		Function Aspect, label: Aspect, action {"command":"Wide","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Display, label: Display, action {"command":"Display","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group ColoredButtons:
+  Harmony Hub Debug               		Function Green, label: Green, action {"command":"Green","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Red, label: Red, action {"command":"Red","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Blue, label: Blue, action {"command":"Blue","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Yellow, label: Yellow, action {"command":"Yellow","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               Device: Denon AV Receiver, id: 35552594, type: StereoReceiver, Manufacturer: Denon, Model: AVR-X3200W
+  Harmony Hub Debug               	Control Group Power:
+  Harmony Hub Debug               		Function PowerOff, label: Power Off, action {"command":"PowerOff","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function PowerOn, label: Power On, action {"command":"PowerOn","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function PowerToggle, label: Power Toggle, action {"command":"PowerToggle","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group Volume:
+  Harmony Hub Debug               		Function Mute, label: Mute, action {"command":"Mute","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function VolumeDown, label: Volume Down, action {"command":"VolumeDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function VolumeUp, label: Volume Up, action {"command":"VolumeUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group NavigationBasic:
+  Harmony Hub Debug               		Function DirectionDown, label: Direction Down, action {"command":"DirectionDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DirectionLeft, label: Direction Left, action {"command":"DirectionLeft","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DirectionRight, label: Direction Right, action {"command":"DirectionRight","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DirectionUp, label: Direction Up, action {"command":"DirectionUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Select, label: Select, action {"command":"Enter","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group TransportBasic:
+  Harmony Hub Debug               		Function Play, label: Play, action {"command":"iPod\/UsbPlay","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Pause, label: Pause, action {"command":"iPod\/UsbPause","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group TransportExtended:
+  Harmony Hub Debug               		Function SkipBackward, label: Skip Backward, action {"command":"iPod\/UsbSkipBack","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function SkipForward, label: Skip Forward, action {"command":"iPod\/UsbSkipForward","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group NavigationDVD:
+  Harmony Hub Debug               		Function Back, label: Back, action {"command":"Back","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group NavigationDSTB:
+  Harmony Hub Debug               		Function Favorite, label: Favorite, action {"command":"InputFavorite","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group RadioTuner:
+  Harmony Hub Debug               		Function PrevPreset, label: Prev Preset, action {"command":"PresetPrev","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function ScanDown, label: Scan Down, action {"command":"TuneDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function ScanUp, label: Scan Up, action {"command":"TuneUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function NextPreset, label: Next Preset, action {"command":"PresetNext","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group Setup:
+  Harmony Hub Debug               		Function Setup, label: Setup, action {"command":"Setup","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Sleep, label: Sleep, action {"command":"Sleep","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group NavigationExtended:
+  Harmony Hub Debug               		Function Info, label: Info, action {"command":"Info","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function PageDown, label: Page Down, action {"command":"PageDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function PageUp, label: Page Up, action {"command":"PageUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group GoogleTVNavigation:
+  Harmony Hub Debug               		Function Pandora, label: Pandora, action {"command":"InputPandora","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function MediaPlayer, label: Media Player, action {"command":"InputMediaPlayer","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               	Control Group Miscellaneous:
+  Harmony Hub Debug               		Function AllBassDown, label: AllBassDown, action {"command":"AllBassDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function AllBassUp, label: AllBassUp, action {"command":"AllBassUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function AllTrebleDown, label: AllTrebleDown, action {"command":"AllTrebleDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function AllTrebleUp, label: AllTrebleUp, action {"command":"AllTrebleUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function AllZoneStereoOff, label: AllZoneStereoOff, action {"command":"AllZoneStereoOff","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function AllZoneStereoOn, label: AllZoneStereoOn, action {"command":"AllZoneStereoOn","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function AudysseyDsx, label: AudysseyDsx, action {"command":"AudysseyDsx","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function AudysseyEqSelect, label: AudysseyEqSelect, action {"command":"AudysseyEqSelect","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function AudysseyLfc, label: AudysseyLfc, action {"command":"AudysseyLfc","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function BandAM, label: BandAM, action {"command":"BandAM","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function BandFM, label: BandFM, action {"command":"BandFM","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function CenterDown, label: CenterDown, action {"command":"CenterDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function CenterUp, label: CenterUp, action {"command":"CenterUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Direct/Stereo, label: Direct/Stereo, action {"command":"Direct\/Stereo","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DolbyPLII/PliixCine, label: DolbyPLII/PliixCine, action {"command":"DolbyPLII\/PliixCine","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DolbyPLII/PliixMusic, label: DolbyPLII/PliixMusic, action {"command":"DolbyPLII\/PliixMusic","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DspSimulation, label: DspSimulation, action {"command":"DspSimulation","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DtsNeo:6Cinem, label: DtsNeo:6Cinem, action {"command":"DtsNeo:6Cinem","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DtsNeo:6Music, label: DtsNeo:6Music, action {"command":"DtsNeo:6Music","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DtsNeo:XOn/Off, label: DtsNeo:XOn/Off, action {"command":"DtsNeo:XOn\/Off","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DynamicEq, label: DynamicEq, action {"command":"DynamicEq","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DynamicEqOff, label: DynamicEqOff, action {"command":"DynamicEqOff","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DynamicEqOn, label: DynamicEqOn, action {"command":"DynamicEqOn","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DynamicVol(Heavy), label: DynamicVol(Heavy), action {"command":"DynamicVol(Heavy)","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DynamicVol(Light), label: DynamicVol(Light), action {"command":"DynamicVol(Light)","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DynamicVol(Medium), label: DynamicVol(Medium), action {"command":"DynamicVol(Medium)","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DynamicVolOff, label: DynamicVolOff, action {"command":"DynamicVolOff","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DynamicVolSelect, label: DynamicVolSelect, action {"command":"DynamicVolSelect","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function DynVol/EQOnOff, label: DynVol/EQOnOff, action {"command":"DynVol\/EQOnOff","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Eco, label: Eco, action {"command":"Eco","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function FrontPanelDim, label: FrontPanelDim, action {"command":"FrontPanelDim","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function HDMIAudOutAmp, label: HDMIAudOutAmp, action {"command":"HDMIAudOutAmp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function HDMIAudOutSel, label: HDMIAudOutSel, action {"command":"HDMIAudOutSel","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function HDMIAudOutTv, label: HDMIAudOutTv, action {"command":"HDMIAudOutTv","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputAux1, label: InputAux1, action {"command":"InputAux1","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputAux2, label: InputAux2, action {"command":"InputAux2","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputBluetooth, label: InputBluetooth, action {"command":"InputBluetooth","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputBlu-ray, label: InputBlu-ray, action {"command":"InputBlu-ray","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputCbl/Sat, label: InputCbl/Sat, action {"command":"InputCbl\/Sat","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputCd, label: InputCd, action {"command":"InputCd","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputDvd, label: InputDvd, action {"command":"InputDvd","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputFlickr, label: InputFlickr, action {"command":"InputFlickr","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputGame, label: InputGame, action {"command":"InputGame","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputInternetRadio, label: InputInternetRadio, action {"command":"InputInternetRadio","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputiPod/Usb, label: InputiPod/Usb, action {"command":"InputiPod\/Usb","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputMediaServer, label: InputMediaServer, action {"command":"InputMediaServer","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputMode, label: InputMode, action {"command":"InputMode","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputModeAnalog, label: InputModeAnalog, action {"command":"InputModeAnalog","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputModeAuto, label: InputModeAuto, action {"command":"InputModeAuto","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputModeDigital, label: InputModeDigital, action {"command":"InputModeDigital","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputModeExtIn, label: InputModeExtIn, action {"command":"InputModeExtIn","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputModeHDMI, label: InputModeHDMI, action {"command":"InputModeHDMI","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputNetRadio, label: InputNetRadio, action {"command":"InputNetRadio","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputOnlineMusic, label: InputOnlineMusic, action {"command":"InputOnlineMusic","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputSiriusXM, label: InputSiriusXM, action {"command":"InputSiriusXM","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputTuner, label: InputTuner, action {"command":"InputTuner","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function InputTvAudio, label: InputTvAudio, action {"command":"InputTvAudio","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function ModeGame, label: ModeGame, action {"command":"ModeGame","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function ModeMovie, label: ModeMovie, action {"command":"ModeMovie","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function ModeMusic, label: ModeMusic, action {"command":"ModeMusic","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function ModePure, label: ModePure, action {"command":"ModePure","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function MultiChStereo, label: MultiChStereo, action {"command":"MultiChStereo","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Option, label: Option, action {"command":"Option","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function PureDirect, label: PureDirect, action {"command":"PureDirect","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function QuickSelect1, label: QuickSelect1, action {"command":"QuickSelect1","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function QuickSelect2, label: QuickSelect2, action {"command":"QuickSelect2","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function QuickSelect3, label: QuickSelect3, action {"command":"QuickSelect3","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function QuickSelect4, label: QuickSelect4, action {"command":"QuickSelect4","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function RefOffset(0db), label: RefOffset(0db), action {"command":"RefOffset(0db)","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function RefOffset(10db), label: RefOffset(10db), action {"command":"RefOffset(10db)","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function RefOffset(15db), label: RefOffset(15db), action {"command":"RefOffset(15db)","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function RefOffset(5db), label: RefOffset(5db), action {"command":"RefOffset(5db)","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function RestorerMode1, label: RestorerMode1, action {"command":"RestorerMode1","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function RestorerMode2, label: RestorerMode2, action {"command":"RestorerMode2","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function RestorerMode3, label: RestorerMode3, action {"command":"RestorerMode3","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function RestorerOff, label: RestorerOff, action {"command":"RestorerOff","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function RestorerSelect, label: RestorerSelect, action {"command":"RestorerSelect","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function SpeakerA, label: SpeakerA, action {"command":"SpeakerA","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function SpeakerB, label: SpeakerB, action {"command":"SpeakerB","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Speakers, label: Speakers, action {"command":"Speakers","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Spotify, label: Spotify, action {"command":"Spotify","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Standard, label: Standard, action {"command":"Standard","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Stereo, label: Stereo, action {"command":"Stereo","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Subwoof2Down, label: Subwoof2Down, action {"command":"Subwoof2Down","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function Subwoof2Up, label: Subwoof2Up, action {"command":"Subwoof2Up","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function VolSubwoofDown, label: VolSubwoofDown, action {"command":"VolSubwoofDown","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               		Function VolSubwoofUp, label: VolSubwoofUp, action {"command":"VolSubwoofUp","type":"IRCommand","deviceId":"35552594"}:
+  Harmony Hub Debug               Device: XBR-75X850D, id: 35552586, type: Television, Manufacturer: Sony, Model: XBR-75X850D
+  Harmony Hub Debug               	Control Group Power:
+  Harmony Hub Debug               		Function PowerOff, label: Power Off, action {"command":"PowerOff","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function PowerOn, label: Power On, action {"command":"PowerOn","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function PowerToggle, label: Power Toggle, action {"command":"PowerToggle","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group NumericBasic:
+  Harmony Hub Debug               		Function Dot, label: ., action {"command":".","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number0, label: 0, action {"command":"0","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number1, label: 1, action {"command":"1","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number2, label: 2, action {"command":"2","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number3, label: 3, action {"command":"3","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number4, label: 4, action {"command":"4","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number5, label: 5, action {"command":"5","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number6, label: 6, action {"command":"6","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number7, label: 7, action {"command":"7","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number8, label: 8, action {"command":"8","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Number9, label: 9, action {"command":"9","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group Volume:
+  Harmony Hub Debug               		Function Mute, label: Mute, action {"command":"Mute","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function VolumeDown, label: Volume Down, action {"command":"VolumeDown","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function VolumeUp, label: Volume Up, action {"command":"VolumeUp","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group Channel:
+  Harmony Hub Debug               		Function PrevChannel, label: Prev Channel, action {"command":"ChannelPrev","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function ChannelDown, label: Channel Down, action {"command":"ChannelDown","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function ChannelUp, label: Channel Up, action {"command":"ChannelUp","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group NavigationBasic:
+  Harmony Hub Debug               		Function DirectionDown, label: Direction Down, action {"command":"DirectionDown","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function DirectionLeft, label: Direction Left, action {"command":"DirectionLeft","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function DirectionRight, label: Direction Right, action {"command":"DirectionRight","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function DirectionUp, label: Direction Up, action {"command":"DirectionUp","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Select, label: Select, action {"command":"Select","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group TransportBasic:
+  Harmony Hub Debug               		Function Stop, label: Stop, action {"command":"Stop","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Play, label: Play, action {"command":"Play","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Rewind, label: Rewind, action {"command":"Rewind","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Pause, label: Pause, action {"command":"Pause","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function FastForward, label: Fast Forward, action {"command":"FastForward","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group TransportExtended:
+  Harmony Hub Debug               		Function SkipBackward, label: Skip Backward, action {"command":"SkipBack","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function SkipForward, label: Skip Forward, action {"command":"SkipForward","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group NavigationDVD:
+  Harmony Hub Debug               		Function Subtitle, label: Subtitle, action {"command":"Subtitle","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Audio, label: Audio, action {"command":"Audio","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Back, label: Back, action {"command":"Back","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group ColoredButtons:
+  Harmony Hub Debug               		Function Green, label: Green, action {"command":"Green","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Red, label: Red, action {"command":"Red","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Blue, label: Blue, action {"command":"Blue","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Yellow, label: Yellow, action {"command":"Yellow","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group NavigationExtended:
+  Harmony Hub Debug               		Function Guide, label: Guide, action {"command":"Guide","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group DisplayMode:
+  Harmony Hub Debug               		Function Aspect, label: Aspect, action {"command":"Wide","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Display, label: Display, action {"command":"Display","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group GoogleTVNavigation:
+  Harmony Hub Debug               		Function Netflix, label: Netflix, action {"command":"Netflix","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               	Control Group Miscellaneous:
+  Harmony Hub Debug               		Function ActionMenu, label: ActionMenu, action {"command":"ActionMenu","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function ClosedCaption, label: ClosedCaption, action {"command":"ClosedCaption","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Discover, label: Discover, action {"command":"Discover","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function GooglePlay, label: GooglePlay, action {"command":"GooglePlay","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Help, label: Help, action {"command":"Help","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Home, label: Home, action {"command":"Home","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Input, label: Input, action {"command":"Input","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function InputHdmi1, label: InputHdmi1, action {"command":"InputHdmi1","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function InputHdmi2, label: InputHdmi2, action {"command":"InputHdmi2","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function InputHdmi3, label: InputHdmi3, action {"command":"InputHdmi3","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function InputHdmi4, label: InputHdmi4, action {"command":"InputHdmi4","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function InputTv, label: InputTv, action {"command":"InputTv","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function InputVideo1, label: InputVideo1, action {"command":"InputVideo1","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function InputVideo2, label: InputVideo2, action {"command":"InputVideo2","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function Jump, label: Jump, action {"command":"Jump","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function PicOff, label: PicOff, action {"command":"PicOff","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               		Function SyncMenu, label: SyncMenu, action {"command":"SyncMenu","type":"IRCommand","deviceId":"35552586"}:
+  Harmony Hub Debug               Device: Apple TV, id: 35618169, type: Default, Manufacturer: Apple, Model: Apple TV (4th generation)
+  Harmony Hub Debug               	Control Group NavigationBasic:
+  Harmony Hub Debug               		Function DirectionDown, label: Direction Down, action {"command":"DirectionDown","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function DirectionLeft, label: Direction Left, action {"command":"DirectionLeft","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function DirectionRight, label: Direction Right, action {"command":"DirectionRight","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function DirectionUp, label: Direction Up, action {"command":"DirectionUp","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function Select, label: Select, action {"command":"Select","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               	Control Group TransportBasic:
+  Harmony Hub Debug               		Function Stop, label: Stop, action {"command":"Stop","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function Play, label: Play, action {"command":"Play","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function Rewind, label: Rewind, action {"command":"Rewind","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function Pause, label: Pause, action {"command":"Pause","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function FastForward, label: Fast Forward, action {"command":"FastForward","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               	Control Group TransportExtended:
+  Harmony Hub Debug               		Function SkipBackward, label: Skip Backward, action {"command":"SkipBack","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function SkipForward, label: Skip Forward, action {"command":"SkipForward","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               	Control Group NavigationDVD:
+  Harmony Hub Debug               		Function Menu, label: Menu, action {"command":"Menu","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function Back, label: Back, action {"command":"Back","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               	Control Group Miscellaneous:
+  Harmony Hub Debug               		Function Home, label: Home, action {"command":"Home","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function Pair, label: Pair, action {"command":"Pair","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function Reboot, label: Reboot, action {"command":"Reboot","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function UnPair, label: UnPair, action {"command":"UnPair","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               		Function VideoMode, label: VideoMode, action {"command":"VideoMode","type":"IRCommand","deviceId":"35618169"}:
+  Harmony Hub Debug               Device: Amazon Fire TV, id: 35761825, type: Default, Manufacturer: Amazon, Model: Fire TV
+  Harmony Hub Debug               	Control Group NavigationBasic:
+  Harmony Hub Debug               		Function DirectionDown, label: Direction Down, action {"command":"DirectionDown","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function DirectionLeft, label: Direction Left, action {"command":"DirectionLeft","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function DirectionRight, label: Direction Right, action {"command":"DirectionRight","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function DirectionUp, label: Direction Up, action {"command":"DirectionUp","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function Select, label: Select, action {"command":"OK","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group TransportBasic:
+  Harmony Hub Debug               		Function Stop, label: Stop, action {"command":"Stop","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function Play, label: Play, action {"command":"Play","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function Rewind, label: Rewind, action {"command":"Rewind","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function Pause, label: Pause, action {"command":"Pause","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function FastForward, label: Fast Forward, action {"command":"FastForward","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group TransportExtended:
+  Harmony Hub Debug               		Function SkipBackward, label: Skip Backward, action {"command":"SkipBackward","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function SkipForward, label: Skip Forward, action {"command":"SkipForward","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group NavigationDVD:
+  Harmony Hub Debug               		Function Menu, label: Menu, action {"command":"Menu","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               		Function Back, label: Back, action {"command":"Back","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group NavigationDSTB:
+  Harmony Hub Debug               		Function Search, label: Search, action {"command":"Search","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group NavigationExtended:
+  Harmony Hub Debug               		Function Exit, label: Exit, action {"command":"Exit","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group GoogleTVNavigation:
+  Harmony Hub Debug               		Function Delete, label: Backspace, action {"command":"Delete","type":"IRCommand","deviceId":"35761825"}:
+  Harmony Hub Debug               	Control Group Miscellaneous:
+  Harmony Hub Debug               		Function Home, label: Home, action {"command":"Home","type":"IRCommand","deviceId":"35761825"}:
