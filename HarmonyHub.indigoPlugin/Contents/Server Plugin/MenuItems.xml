@@ -22,8 +22,19 @@
         <CallbackMethod>toggleDebugging</CallbackMethod>
 	</MenuItem>
 	<MenuItem id="titleSeparator1" type="separator" />
+	<MenuItem id="parseConfig">
+		<Name>Write Formatted Hub Config to Log</Name>
+        <CallbackMethod>parseConfig</CallbackMethod>
+      	<ButtonTitle>Select</ButtonTitle>
+      	<ConfigUI>
+        	<Field id="hubID" type="menu">
+            	<Label>Select Hub:</Label>
+            	<List class="self" filter="" method="pickHub" dynamicReload="true"/>
+         	</Field>
+		</ConfigUI>
+	</MenuItem>
 	<MenuItem id="dumpConfig">
-		<Name>Write Hub Config to Log</Name>
+		<Name>Write Raw Hub Config to Log</Name>
         <CallbackMethod>dumpConfig</CallbackMethod>
       	<ButtonTitle>Select</ButtonTitle>
       	<ConfigUI>
