@@ -19,56 +19,76 @@ class HubClient(object):
 	def __init__(self, plugin, device):
 		self.plugin = plugin
 		self.device = device
+		self.activityList = dict()
 		
 		self.harmony_ip = device.pluginProps['address']
 		self.harmony_port = 5222
-	
-		self.auth_token = auth.login(device.pluginProps['harmonyLogin'], device.pluginProps['harmonyPassword'])
-		if not self.auth_token:
-			self.plugin.debugLog(device.name + u': Could not get token from Logitech server.')
 
-		self.session_token = auth.swap_auth_token(self.harmony_ip, self.harmony_port, self.auth_token)
-		if not self.session_token:
-			self.plugin.debugLog(device.name + u': Could not swap login token for session token.')
+		try:	
+			self.auth_token = auth.login(device.pluginProps['harmonyLogin'], device.pluginProps['harmonyPassword'])
+			if not self.auth_token:
+				self.plugin.debugLog(device.name + u': Could not get token from Logitech server.')
 
-		self.client = harmony_client.create_and_connect_client(self.harmony_ip, self.harmony_port, self.session_token)
+			self.session_token = auth.swap_auth_token(self.harmony_ip, self.harmony_port, self.auth_token)
+			if not self.session_token:
+				self.plugin.debugLog(device.name + u': Could not swap login token for session token.')
 
-		self.client.add_event_handler("session_start", self.session_start)
-		self.client.add_event_handler("stanza", self.stanza)
-		self.client.add_event_handler("message", self.message)
+	#		self.client = harmony_client.create_and_connect_client(self.harmony_ip, self.harmony_port, self.session_token)
 
-#		self.client.process(block=False)
-	
-		self.activityList = dict()
-		self.config = self.client.get_config()
-		self.current_activity_id = self.client.get_current_activity()
+			self.client = harmony_client.HarmonyClient(self.session_token)
+	#		self.client.add_event_handler("session_start", self.session_start)
+			self.client.add_event_handler("iq", self.iq_stanza)
+			self.client.add_event_handler("message", self.message)
+
+	#		self.client.register_plugin('xep_0030')  # Service Discovery
+	#		self.client.register_plugin('xep_0004')  # Data Forms
+	#		self.client.register_plugin('xep_0060')  # PubSub
+	#		self.client.register_plugin('xep_0199')  # XMPP Ping
+
+			self.client.connect(address=(self.harmony_ip, self.harmony_port), use_tls=False, use_ssl=False)
+			self.client.process(block=False)
+			while not self.client.sessionstarted:
+				self.plugin.debugLog(self.device.name + u": Waiting for client.sessionstarted")
+				time.sleep(0.1)
+		except:
+			self.plugin.debugLog(self.device.name + u": Error setting up hub connection")
+			
+		try:	
+			self.config = self.client.get_config()
+		except:
+			self.plugin.debugLog(self.device.name + u": Error in client.get_config")
+		try:	
+			self.current_activity_id = self.client.get_current_activity()
+		except:
+			self.plugin.debugLog(self.device.name + u": Error in client.get_current_activity")
+
+		self.plugin.debugLog(self.device.name + u": current_activity_id = " + str(self.current_activity_id))
 		for activity in self.config["activity"]:
 			if activity["id"] == "-1":
 				pass
 			else:
-				action = json.loads(activity["controlGroup"][0]["function"][0]["action"])			
-				soundDev = action["deviceId"]						
-				self.activityList[activity[u'id']] = {'label': activity[u'label'], 'type': activity[u'type'], 'soundDev': soundDev }
-				if self.current_activity_id == int(activity[u'id']):
-					self.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
-					self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
-					self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'] + '  *Active*')
-				else:
-					self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'])
+				try:
+					action = json.loads(activity["controlGroup"][0]["function"][0]["action"])			
+					soundDev = action["deviceId"]						
+					self.activityList[activity[u'id']] = {'label': activity[u'label'], 'type': activity[u'type'], 'soundDev': soundDev }
+					if self.current_activity_id == int(activity[u'id']):
+						self.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
+						self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
+						self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'] + '  *Active*')
+					else:
+						self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'])
+				except:
+					pass 	# Not all Activities have sound devices...
+				
 
 	def session_start(self, data):
 		self.plugin.debugLog(self.device.name + u": session_start, data = " + str(event))
-#		self.client.send_presence()
-#		self.client.get_roster()
-#		self.client.process(block=False)
 	
-	def stanza(self, data):
+	def iq_stanza(self, data):
 		self.plugin.debugLog(self.device.name + u": stanza, data = " + str(stanza))
-#		self.client.process(block=False)
 	
 	def message(self, data):
 		self.plugin.debugLog(self.device.name + u": message, data = " + str(msg))
-#		self.client.process(block=False)
 	
 ################################################################################
 class Plugin(indigo.PluginBase):
@@ -109,28 +129,13 @@ class Plugin(indigo.PluginBase):
 		try:
 			while True:
 			
-				# for now, poll the hubs for activity changes
-				
-				for id, hub in self.hubDict.items():
-#					self.debugLog(hub.device.name + u": checking current activity")
-					try:
-						hub.current_activity_id = hub.client.get_current_activity()
-					except:
-						pass
-					else:
-						for activity in hub.config["activity"]:
-							if hub.current_activity_id == int(activity[u'id']):
-								hub.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
-								hub.device.updateStateOnServer(key="activityName", value=activity[u'label'])
-								break	
-
 				# Plugin Update check
 				
 				if time.time() > self.next_update_check:
 					self.updater.checkForUpdate()
 					self.next_update_check = time.time() + float(self.pluginPrefs['updateFrequency']) * 60.0 * 60.0
 
-				self.sleep(60.0)	
+				self.sleep(1.0)	
 								
 		except self.stopThread:
 			pass
