@@ -39,7 +39,9 @@ class HubClient(object):
 		self.current_activity_id = self.client.get_current_activity()
 		for activity in self.config["activity"]:
 			if activity["id"] == "-1":
-				pass
+				if self.current_activity_id == -1:
+					self.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
+					self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
 			else:
 				action = json.loads(activity["controlGroup"][0]["function"][0]["action"]) 
 				soundDev = action["deviceId"]						
@@ -75,11 +77,6 @@ class Plugin(indigo.PluginBase):
 
 		self.hubDict = dict()
 		self.triggers = { }
-		
-		# Need to subscribe to device changes here so we can call the refreshDeviceList method
-		# in case there was a change or deletion of a device that's published
-		indigo.devices.subscribeToChanges()		
-		
 							
 	def shutdown(self):
 		indigo.server.log(u"Shutting down Harmony Hub")
@@ -240,40 +237,39 @@ class Plugin(indigo.PluginBase):
 		hub = self.hubDict[int(hubDevice.id)]
 		activityID = pluginAction.props["activity"]
 		activityLabel = hub.activityList[activityID]["label"]
-		hubDevice.updateStateOnServer(key="activityNum", value=activityID)
-		hubDevice.updateStateOnServer(key="activityName", value=activityLabel)
 		self.debugLog(hubDevice.name + u": Start Activity - " + activityLabel)
 		hub.client.start_activity(int(activityID))
+		hub.device.updateStateOnServer(key="activityNum", value=activityID)
+		hub.device.updateStateOnServer(key="activityName", value=activityLabel)
 
 	def powerOff(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
-		client = self.hubDict[int(hubDevice.id)].client
+		hub = self.hubDict[int(hubDevice.id)]
 		self.debugLog(hubDevice.name + u": Power Off")
-		client.start_activity(-1)
+		hub.client.start_activity(-1)
+		hub.device.updateStateOnServer(key="activityNum", value="-1")
+		hub.device.updateStateOnServer(key="activityName", value="PowerOff")
 
 	def volumeMute(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		hub = self.hubDict[int(hubDevice.id)]
-		client = hub.client
 		soundDev = hub.activityList[str(hub.current_activity_id)]["soundDev"]
 		self.debugLog(hubDevice.name + u": sending Mute to " + soundDev)
-		client.send_command(soundDev, "Mute")
+		hub.client.send_command(soundDev, "Mute")
 		
 	def volumeDown(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		hub = self.hubDict[int(hubDevice.id)]
-		client = hub.client
 		soundDev = hub.activityList[str(hub.current_activity_id)]["soundDev"]
 		self.debugLog(hubDevice.name + u": sending VolumeDown to " + soundDev)
-		client.send_command(soundDev, "VolumeDown")
+		hub.client.send_command(soundDev, "VolumeDown")
 		
 	def volumeUp(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		hub = self.hubDict[int(hubDevice.id)]
-		client = hub.client
 		soundDev = hub.activityList[str(hub.current_activity_id)]["soundDev"]
 		self.debugLog(hubDevice.name + u": sending VolumeUp to " + soundDev)
-		client.send_command(soundDev, "VolumeUp")
+		hub.client.send_command(soundDev, "VolumeUp")
 
 	def sendActivityCommand(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
@@ -369,7 +365,6 @@ class Plugin(indigo.PluginBase):
 	########################################
 
 	def activityListGenerator(self, filter, valuesDict, typeId, targetId):		
-#		self.debugLog(u"activityListGenerator, filter = %s, typeId = %s, targetId = %s, valuesDict = %s" % (filter, typeId, targetId, str(valuesDict)))
 		hubID = int(targetId)
 		retList = []
 		for id,info in self.hubDict[hubID].activityList.iteritems():
@@ -377,35 +372,17 @@ class Plugin(indigo.PluginBase):
 				retList.append((id, info["label"]))
 		retList.sort(key=lambda tup: tup[1])
 		return retList
-
-	def activityMenuChanged(self, valuesDict, typeId, devId):
-#		self.debugLog(u"activityMenuChanged, typeId = %s, devId = %s, valuesDict = %s" % (typeId, devId, str(valuesDict)))
-		# do whatever you need to here
-		#   typeId is the device type specified in the Devices.xml
-		#   devId is the device ID - 0 if it's a new device
-		return valuesDict
     
 	def deviceListGenerator(self, filter, valuesDict, typeId, targetId):		
-#		self.debugLog(u"deviceListGenerator, filter = %s, typeId = %s, targetId = %s, valuesDict = %s" % (filter, typeId, targetId, str(valuesDict)))
 		retList = []			
 		hubID = int(targetId)
 		config = self.hubDict[hubID].config
 		for device in config["device"]:
-			self.debugLog(u"Device: %s, id: %s" % (device['label'], device['id']))
 			retList.append((device['id'], device["label"]))
-
 		retList.sort(key=lambda tup: tup[1])
 		return retList
 
-	def deviceMenuChanged(self, valuesDict, typeId, devId):
-		self.debugLog(u"deviceMenuChanged, typeId = %s, devId = %s, valuesDict = %s" % (typeId, devId, str(valuesDict)))
-		# do whatever you need to here
-		#   typeId is the device type specified in the Devices.xml
-		#   devId is the device ID - 0 if it's a new device
-		return valuesDict
-    
 	def commandGroupListGenerator(self, filter, valuesDict, typeId, targetId):		
-#		self.debugLog(u"commandGroupListGenerator, filter = %s, typeId = %s, targetId = %s, valuesDict = %s" % (filter, typeId, targetId, str(valuesDict)))
 		retList = []
 		if not valuesDict:
 			return retList
@@ -432,19 +409,10 @@ class Plugin(indigo.PluginBase):
 		else:
 			self.debugLog(u"commandGroupListGenerator Error: Unknown typeId (%s)" % typeId)
 		
-		
 		retList.sort(key=lambda tup: tup[1])
 		return retList
-
-	def commandGroupMenuChanged(self, valuesDict, typeId, devId):
-#		self.debugLog(u"commandGroupMenuChanged, typeId = %s, devId = %s, valuesDict = %s" % (typeId, devId, str(valuesDict)))
-		# do whatever you need to here
-		#   typeId is the device type specified in the Devices.xml
-		#   devId is the device ID - 0 if it's a new device
-		return valuesDict
     
 	def commandListGenerator(self, filter, valuesDict, typeId, targetId):		
-#		self.debugLog(u"commandListGenerator, filter = %s, typeId = %s, targetId = %s, valuesDict = %s" % (filter, typeId, targetId, str(valuesDict)))
 		retList = []
 		if not valuesDict:
 			return retList
@@ -480,8 +448,12 @@ class Plugin(indigo.PluginBase):
 		retList.sort(key=lambda tup: tup[1])
 		return retList
 
+	# doesn't do anything, just needed to force other menus to dynamically refresh
+	
+	def menuChanged(self, valuesDict, typeId, devId):
+		return valuesDict
+
 	def validateActionConfigUi(self, valuesDict, typeId, actionId):
-#		self.debugLog(u"validateActionConfigUi, typeId = %s, actionId = %s, valuesDict = %s" % (typeId, actionId, str(valuesDict)))
 
 		hubID = int(actionId)
 		config = self.hubDict[hubID].config
@@ -515,8 +487,6 @@ class Plugin(indigo.PluginBase):
 
 		if valuesDict['command'] == "":
 			errorDict["command"] = "Command must be selected"
-
-#		self.debugLog(u"validateActionConfigUi ending: valuesDict = %s" % str(valuesDict))
 			
 		if len(errorDict) > 0:
 			return (False, valuesDict, errorDict)

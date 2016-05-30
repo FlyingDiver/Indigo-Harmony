@@ -18,12 +18,12 @@
 			<Field id="activity" type="menu">
 				<Label>Activity:</Label>
 				<List class="self" filter="" method="activityListGenerator"/>
-		        <CallbackMethod>activityMenuChanged</CallbackMethod>
+		        <CallbackMethod>menuChanged</CallbackMethod>
 			</Field>
 			<Field id="group" type="menu">
 				<Label>Command Group:</Label>
 				<List class="self" filter="" method="commandGroupListGenerator" dynamicReload="true"/>
-		        <CallbackMethod>commandGroupMenuChanged</CallbackMethod>
+		        <CallbackMethod>menuChanged</CallbackMethod>
 			</Field>
 			<Field id="command" type="menu">
 				<Label>Command:</Label>
@@ -41,12 +41,12 @@
 			<Field id="device" type="menu">
 				<Label>Device:</Label>
 				<List class="self" filter="" method="deviceListGenerator"/>
-		        <CallbackMethod>deviceMenuChanged</CallbackMethod>
+		        <CallbackMethod>menuChanged</CallbackMethod>
 			</Field>
 			<Field id="group" type="menu">
 				<Label>Command Group:</Label>
 				<List class="self" filter="" method="commandGroupListGenerator" dynamicReload="true"/>
-		        <CallbackMethod>commandGroupMenuChanged</CallbackMethod>
+		        <CallbackMethod>menuChanged</CallbackMethod>
 			</Field>
 			<Field id="command" type="menu">
 				<Label>Command:</Label>
