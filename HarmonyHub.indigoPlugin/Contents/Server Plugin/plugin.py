@@ -139,15 +139,17 @@ class Plugin(indigo.PluginBase):
 						try:
 							hub.current_activity_id = hub.client.get_current_activity()
 						except sleekxmpp.exceptions.IqTimeout:
+							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", time out.")
 							pass
 						except:
-							self.debugLog("runConcurrentThread get_current_activity Error: " + str(sys.exc_info()[0]))
+							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", get_current_activity Error: " + str(sys.exc_info()[0]))
 						else:
 							for activity in hub.config["activity"]:
 								if hub.current_activity_id == int(activity[u'id']):
 									hub.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
 									hub.device.updateStateOnServer(key="activityName", value=activity[u'label'])
 									break	
+							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", current activity: " + activity[u'label'])
 					self.next_poll = time.time() + 60.0
 
 				# Plugin Update check
@@ -183,6 +185,18 @@ class Plugin(indigo.PluginBase):
 		assert trigger.id in self.triggers
 		del self.triggers[trigger.id] 
 
+    def getTriggersForType(self, triggerTypeIds):
+        """ 
+        *triggerTypeIds* is a set or list of trigger type IDs we want
+        to check.  We will give back the list of those types of
+        triggers we know about in a deterministic order.
+        """
+        t = [ ]
+        for tid, trigger in sorted(self.triggers.iteritems()):
+            if trigger.pluginTypeId in triggerTypeIds:
+                t.append(trigger)
+        return t
+        
 	def triggerCheck(self, device):
 		self.debugLog("Checking Triggers for Device %s (%d)" % (device.name, device.id))
 	
