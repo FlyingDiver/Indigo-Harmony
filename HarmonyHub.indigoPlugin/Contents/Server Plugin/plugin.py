@@ -41,14 +41,14 @@ class HubClient(object):
 	#		self.client = harmony_client.create_and_connect_client(self.harmony_ip, self.harmony_port, self.session_token)
 
 			self.client = harmony_client.HarmonyClient(self.session_token)
-	#		self.client.add_event_handler("session_start", self.session_start)
 			self.client.add_event_handler("iq", self.iq_stanza)
 			self.client.add_event_handler("message", self.message)
 
-	#		self.client.register_plugin('xep_0030')  # Service Discovery
-	#		self.client.register_plugin('xep_0004')  # Data Forms
-	#		self.client.register_plugin('xep_0060')  # PubSub
-	#		self.client.register_plugin('xep_0199')  # XMPP Ping
+	#		self.client.add_event_handler("session_start", self.session_start)
+	#		self.client.register_plugin('xep_0030')	 # Service Discovery
+	#		self.client.register_plugin('xep_0004')	 # Data Forms
+	#		self.client.register_plugin('xep_0060')	 # PubSub
+	#		self.client.register_plugin('xep_0199')	 # XMPP Ping
 
 			self.client.connect(address=(self.harmony_ip, self.harmony_port), use_tls=False, use_ssl=False)
 			self.client.process(block=False)
@@ -84,11 +84,11 @@ class HubClient(object):
 					if self.current_activity_id == int(activity[u'id']):
 						self.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
 						self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
-						self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'] + '  *Active*')
+						self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'] + '	 *Active*')
 					else:
 						self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'])
 				except:
-					pass 	# Not all Activities have sound devices...
+					pass	# Not all Activities have sound devices...
 	
 	def iq_stanza(self, data):
 		self.plugin.debugLog(self.device.name + u": stanza, data = " + str(stanza))
@@ -158,7 +158,7 @@ class Plugin(indigo.PluginBase):
 					self.updater.checkForUpdate()
 					self.next_update_check = time.time() + float(self.pluginPrefs['updateFrequency']) * 60.0 * 60.0
 
-				self.sleep(1.0)	
+				self.sleep(1.0) 
 								
 		except self.stopThread:
 			pass
@@ -185,18 +185,18 @@ class Plugin(indigo.PluginBase):
 		assert trigger.id in self.triggers
 		del self.triggers[trigger.id] 
 
-    def getTriggersForType(self, triggerTypeIds):
-        """ 
-        *triggerTypeIds* is a set or list of trigger type IDs we want
-        to check.  We will give back the list of those types of
-        triggers we know about in a deterministic order.
-        """
-        t = [ ]
-        for tid, trigger in sorted(self.triggers.iteritems()):
-            if trigger.pluginTypeId in triggerTypeIds:
-                t.append(trigger)
-        return t
-        
+	def getTriggersForType(self, triggerTypeIds):
+		""" 
+		*triggerTypeIds* is a set or list of trigger type IDs we want
+		to check.  We will give back the list of those types of
+		triggers we know about in a deterministic order.
+		"""
+		t = [ ]
+		for tid, trigger in sorted(self.triggers.iteritems()):
+			if trigger.pluginTypeId in triggerTypeIds:
+				t.append(trigger)
+		return t
+		
 	def triggerCheck(self, device):
 		self.debugLog("Checking Triggers for Device %s (%d)" % (device.name, device.id))
 	
@@ -429,7 +429,7 @@ class Plugin(indigo.PluginBase):
 				retList.append((id, info["label"]))
 		retList.sort(key=lambda tup: tup[1])
 		return retList
-    
+	
 	def deviceListGenerator(self, filter, valuesDict, typeId, targetId):		
 		retList = []			
 		hubID = int(targetId)
@@ -468,7 +468,7 @@ class Plugin(indigo.PluginBase):
 		
 		retList.sort(key=lambda tup: tup[1])
 		return retList
-    
+	
 	def commandListGenerator(self, filter, valuesDict, typeId, targetId):		
 		retList = []
 		if not valuesDict:
@@ -512,11 +512,32 @@ class Plugin(indigo.PluginBase):
 
 	def validateActionConfigUi(self, valuesDict, typeId, actionId):
 
-		hubID = int(actionId)
-		config = self.hubDict[hubID].config
 		errorDict = indigo.Dict()
 
-		if typeId == "sendActivityCommand":
+		if typeId == "startActivity":
+			self.debugLog(u"validateActionConfigUi startActivity")
+		
+		elif typeId == "sendCommand":
+			self.debugLog(u"validateActionConfigUi sendCommand")
+			if valuesDict['device'] == "":
+				errorDict["device"] = "Device must be entered"
+			if valuesDict['command'] == "":
+				errorDict["command"] = "Command must be entered"
+				
+		
+		elif typeId == "setChannel":
+			self.debugLog(u"validateActionConfigUi setChannel")
+			if valuesDict['channel'] == "":
+				errorDict["channel"] = "Channel must be entered"
+			channel = int(valuesDict['channel'])
+			if channel < 2 or channel > 120:
+				errorDict["channel"] = "Channel out of range"
+			return (True, valuesDict)
+		
+		elif typeId == "sendActivityCommand":
+			self.debugLog(u"validateActionConfigUi sendActivityCommand")
+			hubID = int(actionId)
+			config = self.hubDict[hubID].config
 			for activity in config["activity"]:
 				if activity["id"] != valuesDict['activity']:
 					continue
@@ -532,19 +553,26 @@ class Plugin(indigo.PluginBase):
 			if valuesDict['activity'] == "":
 				errorDict["activity"] = "Activity must be selected"
 
+			if valuesDict['group'] == "":
+				errorDict["group"] = "Command Group must be selected"
+
+			if valuesDict['command'] == "":
+				errorDict["command"] = "Command must be selected"
+				
 		elif typeId == "sendDeviceCommand":
+			self.debugLog(u"validateActionConfigUi sendDeviceCommand")
 			if valuesDict['device'] == "":
 				errorDict["device"] = "Device must be selected"
 
+			if valuesDict['group'] == "":
+				errorDict["group"] = "Command Group must be selected"
+
+			if valuesDict['command'] == "":
+				errorDict["command"] = "Command must be selected"
+				
 		else:
 			self.debugLog(u"validateActionConfigUi Error: Unknown typeId (%s)" % typeId)
 
-		if valuesDict['group'] == "":
-			errorDict["group"] = "Command Group must be selected"
-
-		if valuesDict['command'] == "":
-			errorDict["command"] = "Command must be selected"
-			
 		if len(errorDict) > 0:
 			return (False, valuesDict, errorDict)
 		else:

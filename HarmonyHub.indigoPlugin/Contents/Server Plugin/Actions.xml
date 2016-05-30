@@ -61,10 +61,6 @@
 			<Field id="device" type="textfield">
 				<Label>Device ID:</Label>
 			</Field>
-			<Field id="group" type="menu">
-				<Label>Command Group:</Label>
-				<List class="self" filter="" method="commandGroupListGenerator" dynamicReload="true"/>
-			</Field>
 			<Field id="command" type="textfield">
 				<Label>Command:</Label>
 			</Field>
