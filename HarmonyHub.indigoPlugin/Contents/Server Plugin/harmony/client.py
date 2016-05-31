@@ -41,13 +41,21 @@ class MatchMessage(MatcherBase):
 	def match(self, xml):
 	
 		if type(xml) == sleekxmpp.stanza.stream_features.StreamFeatures:
-			indigo.server.log(u"MatchMessage: sleekxmpp.stanza.stream_features.StreamFeatures")
+#			indigo.server.log(u"MatchMessage: sleekxmpp.stanza.stream_features.StreamFeatures")
+			pass
 		elif type(xml) == sleekxmpp.features.feature_mechanisms.stanza.success.Success:
-			indigo.server.log(u"MatchMessage: sleekxmpp.features.feature_mechanisms.stanza.success.Success")
+#			indigo.server.log(u"MatchMessage: sleekxmpp.features.feature_mechanisms.stanza.success.Success")
+			pass
 		elif type(xml) == sleekxmpp.stanza.iq.Iq:
-			indigo.server.log(u"MatchMessage: sleekxmpp.stanza.iq.Iq %s" % xml['type'])
+#			indigo.server.log(u"MatchMessage: sleekxmpp.stanza.iq.Iq %s" % xml['type'])
+			pass
 		elif type(xml) == sleekxmpp.stanza.message.Message:
-			indigo.server.log(u"MatchMessage: sleekxmpp.stanza.message.Message, contents:\n%s" % str(xml))
+#			indigo.server.log(u"MatchMessage: sleekxmpp.stanza.message.Message, xml = \n%s\n" % (repr(xml)))
+			root = ET.fromstring(str(xml))
+			indigo.server.log(u"MatchMessage: sleekxmpp.stanza.message.Message, root = %s, %s, %s" % (root.tag, root.attrib, root.text))
+			for child in root:
+				indigo.server.log(u"MatchMessage: sleekxmpp.stanza.message.Message, child = %s, attrib = %s\n%s " % (child.tag, child.attrib, child.text))
+#			indigo.server.log(u"MatchMessage: sleekxmpp.stanza.message.Message, tag = %s, text = %s" % (root[0][1].tag, root[0][1].text))
 		else:
 			indigo.server.log(u"MatchMessage: %s" % type(xml))
 		
