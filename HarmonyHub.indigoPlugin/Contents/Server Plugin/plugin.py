@@ -38,17 +38,9 @@ class HubClient(object):
 			if not self.session_token:
 				self.plugin.debugLog(device.name + u': Could not swap login token for session token.')
 
-	#		self.client = harmony_client.create_and_connect_client(self.harmony_ip, self.harmony_port, self.session_token)
-
 			self.client = harmony_client.HarmonyClient(self.session_token)
 			self.client.add_event_handler("iq", self.iq_stanza)
 			self.client.add_event_handler("message", self.message)
-
-	#		self.client.add_event_handler("session_start", self.session_start)
-	#		self.client.register_plugin('xep_0030')	 # Service Discovery
-	#		self.client.register_plugin('xep_0004')	 # Data Forms
-	#		self.client.register_plugin('xep_0060')	 # PubSub
-	#		self.client.register_plugin('xep_0199')	 # XMPP Ping
 
 			self.client.connect(address=(self.harmony_ip, self.harmony_port), use_tls=False, use_ssl=False)
 			self.client.process(block=False)
@@ -63,17 +55,14 @@ class HubClient(object):
 		except:
 			self.plugin.debugLog(self.device.name + u": Error in client.get_config")
 		try:	
-			self.current_activity_id = self.client.get_current_activity()
+			self.current_activity_id = str(self.client.get_current_activity())
+			self.plugin.debugLog(self.device.name + u": current_activity_id = " + self.current_activity_id)
 		except:
 			self.plugin.debugLog(self.device.name + u": Error in client.get_current_activity")
 
-		self.plugin.debugLog(self.device.name + u": current_activity_id = " + str(self.current_activity_id))
-		self.activityList = dict()
-		self.config = self.client.get_config()
-		self.current_activity_id = self.client.get_current_activity()
 		for activity in self.config["activity"]:
 			if activity["id"] == "-1":
-				if self.current_activity_id == -1:
+				if self.current_activity_id == '-1':
 					self.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
 					self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
 			else:
@@ -81,20 +70,20 @@ class HubClient(object):
 					action = json.loads(activity["controlGroup"][0]["function"][0]["action"])			
 					soundDev = action["deviceId"]						
 					self.activityList[activity[u'id']] = {'label': activity[u'label'], 'type': activity[u'type'], 'soundDev': soundDev }
-					if self.current_activity_id == int(activity[u'id']):
-						self.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
-						self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
-						self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'] + '	 *Active*')
-					else:
-						self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'])
-				except:
-					pass	# Not all Activities have sound devices...
-	
+
+				except:			# Not all Activities have sound devices...
+					self.activityList[activity[u'id']] = {'label': activity[u'label'], 'type': activity[u'type'] }
+
+				if self.current_activity_id == activity[u'id']:
+					self.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
+					self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
+				self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'])
+		
 	def iq_stanza(self, data):
-		self.plugin.debugLog(self.device.name + u": stanza, data = " + str(stanza))
+		self.plugin.debugLog(self.device.name + u": iq event received, data = " + str(stanza))
 	
 	def message(self, data):
-		self.plugin.debugLog(self.device.name + u": message, data = " + str(msg))
+		self.plugin.debugLog(self.device.name + u": message event received, data = " + str(msg))
 	
 ################################################################################
 class Plugin(indigo.PluginBase):
@@ -137,7 +126,7 @@ class Plugin(indigo.PluginBase):
 				if time.time() > self.next_poll:
 					for id, hub in self.hubDict.items():
 						try:
-							hub.current_activity_id = hub.client.get_current_activity()
+							hub.current_activity_id = str(hub.client.get_current_activity())
 						except sleekxmpp.exceptions.IqTimeout:
 							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", time out.")
 							pass
@@ -145,12 +134,12 @@ class Plugin(indigo.PluginBase):
 							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", get_current_activity Error: " + str(sys.exc_info()[0]))
 						else:
 							for activity in hub.config["activity"]:
-								if hub.current_activity_id == int(activity[u'id']):
+								if hub.current_activity_id == activity[u'id']:
 									hub.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
 									hub.device.updateStateOnServer(key="activityName", value=activity[u'label'])
 									break	
 							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", current activity: " + activity[u'label'])
-					self.next_poll = time.time() + 60.0
+					self.next_poll = time.time() + 120.0
 
 				# Plugin Update check
 				
@@ -310,21 +299,21 @@ class Plugin(indigo.PluginBase):
 	def volumeMute(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		hub = self.hubDict[int(hubDevice.id)]
-		soundDev = hub.activityList[str(hub.current_activity_id)]["soundDev"]
+		soundDev = hub.activityList[hub.current_activity_id]["soundDev"]
 		self.debugLog(hubDevice.name + u": sending Mute to " + soundDev)
 		hub.client.send_command(soundDev, "Mute")
 		
 	def volumeDown(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		hub = self.hubDict[int(hubDevice.id)]
-		soundDev = hub.activityList[str(hub.current_activity_id)]["soundDev"]
+		soundDev = hub.activityList[hub.current_activity_id]["soundDev"]
 		self.debugLog(hubDevice.name + u": sending VolumeDown to " + soundDev)
 		hub.client.send_command(soundDev, "VolumeDown")
 		
 	def volumeUp(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		hub = self.hubDict[int(hubDevice.id)]
-		soundDev = hub.activityList[str(hub.current_activity_id)]["soundDev"]
+		soundDev = hub.activityList[hub.current_activity_id]["soundDev"]
 		self.debugLog(hubDevice.name + u": sending VolumeUp to " + soundDev)
 		hub.client.send_command(soundDev, "VolumeUp")
 
@@ -395,7 +384,7 @@ class Plugin(indigo.PluginBase):
 		client = self.hubDict[hubID].client
 		config = self.hubDict[hubID].config
 		current_activity_id = client.get_current_activity()
-		activity = [x for x in config['activity'] if int(x['id']) == current_activity_id][0]
+		activity = [x for x in config['activity'] if x['id'] == current_activity_id][0]
 		self.debugLog(json.dumps(activity, sort_keys=True, indent=4, separators=(',', ': ')))
 		return (True, valuesDict)
 		
@@ -523,7 +512,6 @@ class Plugin(indigo.PluginBase):
 				errorDict["device"] = "Device must be entered"
 			if valuesDict['command'] == "":
 				errorDict["command"] = "Command must be entered"
-				
 		
 		elif typeId == "setChannel":
 			self.debugLog(u"validateActionConfigUi setChannel")
@@ -552,10 +540,8 @@ class Plugin(indigo.PluginBase):
 
 			if valuesDict['activity'] == "":
 				errorDict["activity"] = "Activity must be selected"
-
 			if valuesDict['group'] == "":
 				errorDict["group"] = "Command Group must be selected"
-
 			if valuesDict['command'] == "":
 				errorDict["command"] = "Command must be selected"
 				
@@ -563,10 +549,8 @@ class Plugin(indigo.PluginBase):
 			self.debugLog(u"validateActionConfigUi sendDeviceCommand")
 			if valuesDict['device'] == "":
 				errorDict["device"] = "Device must be selected"
-
 			if valuesDict['group'] == "":
 				errorDict["group"] = "Command Group must be selected"
-
 			if valuesDict['command'] == "":
 				errorDict["command"] = "Command must be selected"
 				
