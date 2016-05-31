@@ -7,13 +7,30 @@ import time
 import json
 import sleekxmpp
 from sleekxmpp.xmlstream import ET
-
+from sleekxmpp.xmlstream.matcher.base import MatcherBase
+from sleekxmpp.xmlstream.handler import Callback
 
 from ghpu import GitHubPluginUpdater
 from harmony import auth
 from harmony import client as harmony_client
 
 kCurDevVersCount = 0		# current version of plugin devices
+
+def message_callback(msg):
+	if msg.startswith("<message "):
+		indigo.server.debugLog(self.device.name + u": message event received, data = " + str(msg))
+	else:
+		indigo.server.debugLog(self.device.name + u": non-message event received")
+		
+class MatchAll(MatcherBase):
+	def __init__(self, criteria):
+		self._criteria = criteria
+
+	def match(self, xml):
+		"""Check if a stanza matches the stored criteria.
+		Meant to be overridden.
+		"""
+		return True
 
 class HubClient(object):
 
@@ -38,28 +55,35 @@ class HubClient(object):
 			if not self.session_token:
 				self.plugin.debugLog(device.name + u': Could not swap login token for session token.')
 
-			self.client = harmony_client.HarmonyClient(self.session_token)
-			self.client.add_event_handler("iq", self.iq_stanza)
-			self.client.add_event_handler("message", self.message)
-
+			self.client = harmony_client.HarmonyClient(self.session_token, message_callback)
+			self.client.registerHandler(Callback('Message Handler', MatchAll(''), message_callback))
+	
 			self.client.connect(address=(self.harmony_ip, self.harmony_port), use_tls=False, use_ssl=False)
 			self.client.process(block=False)
 			while not self.client.sessionstarted:
 				self.plugin.debugLog(self.device.name + u": Waiting for client.sessionstarted")
 				time.sleep(0.1)
-		except:
-			self.plugin.debugLog(self.device.name + u": Error setting up hub connection")
+		except Exception as e:
+			self.plugin.debugLog(self.device.name + u": Error setting up hub connection: " + str(e))
 			
 		try:	
 			self.config = self.client.get_config()
-		except:
-			self.plugin.debugLog(self.device.name + u": Error in client.get_config")
+		except Exception as e:
+			self.plugin.debugLog(self.device.name + u": Error in client.get_config: " + str(e))
+			
 		try:	
 			self.current_activity_id = str(self.client.get_current_activity())
 			self.plugin.debugLog(self.device.name + u": current_activity_id = " + self.current_activity_id)
-		except:
-			self.plugin.debugLog(self.device.name + u": Error in client.get_current_activity")
-
+		except sleekxmpp.exceptions.IqTimeout:
+			self.plugin.debugLog(self.device.name + u": Time out in client.get_current_activity")
+			self.current_activity_id = 0
+		except sleekxmpp.exceptions.IqError:
+			self.plugin.debugLog(self.device.name + u": IqError in client.get_current_activity")
+			self.current_activity_id = 0
+		except Exception as e:
+			self.plugin.debugLog(self.device.name + u": Error in client.get_current_activity: " + str(e))
+			self.current_activity_id = 0
+			
 		for activity in self.config["activity"]:
 			if activity["id"] == "-1":
 				if self.current_activity_id == '-1':
@@ -71,7 +95,7 @@ class HubClient(object):
 					soundDev = action["deviceId"]						
 					self.activityList[activity[u'id']] = {'label': activity[u'label'], 'type': activity[u'type'], 'soundDev': soundDev }
 
-				except:			# Not all Activities have sound devices...
+				except Exception as e:			# Not all Activities have sound devices...
 					self.activityList[activity[u'id']] = {'label': activity[u'label'], 'type': activity[u'type'] }
 
 				if self.current_activity_id == activity[u'id']:
@@ -79,13 +103,7 @@ class HubClient(object):
 					self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
 				self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'])
 		
-	def iq_stanza(self, data):
-		self.plugin.debugLog(self.device.name + u": iq event received, data = " + str(stanza))
-	
-	def message(self, data):
-		self.plugin.debugLog(self.device.name + u": message event received, data = " + str(msg))
-	
-################################################################################
+		
 class Plugin(indigo.PluginBase):
 					
 	########################################
@@ -129,9 +147,10 @@ class Plugin(indigo.PluginBase):
 							hub.current_activity_id = str(hub.client.get_current_activity())
 						except sleekxmpp.exceptions.IqTimeout:
 							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", time out.")
-							pass
-						except:
-							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", get_current_activity Error: " + str(sys.exc_info()[0]))
+						except sleekxmpp.exceptions.IqError:
+							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", IqError.")
+#						except:
+#							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", get_current_activity Error: " + str(sys.exc_info()[0]))
 						else:
 							for activity in hub.config["activity"]:
 								if hub.current_activity_id == activity[u'id']:
@@ -247,7 +266,6 @@ class Plugin(indigo.PluginBase):
 
 			else:
 				self.debugLog(device.name + u": Duplicate Device ID" )
-			
 			
 	########################################
 	# Terminate communication with servers

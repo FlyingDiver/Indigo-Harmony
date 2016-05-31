@@ -6,22 +6,34 @@ import time
 
 import sleekxmpp
 from sleekxmpp.xmlstream import ET
+from sleekxmpp.xmlstream.matcher.base import MatcherBase
+from sleekxmpp.xmlstream.handler import Callback
 
 LOGGER = logging.getLogger(__name__)
 
+class MatchAll(MatcherBase):
+	def __init__(self, criteria):
+		self._criteria = criteria
+
+	def match(self, xml):
+		"""Check if a stanza matches the stored criteria.
+		Meant to be overridden.
+		"""
+		return True
 
 class HarmonyClient(sleekxmpp.ClientXMPP):
 	"""An XMPP client for connecting to the Logitech Harmony."""
 
-	def __init__(self, auth_token):
+	def __init__(self, auth_token, message_callback=None):
 		user = '%s@connect.logitech.com/gatorade.' % auth_token
 		password = auth_token
 		plugin_config = {
 			# Enables PLAIN authentication which is off by default.
 			'feature_mechanisms': {'unencrypted_plain': True},
 		}
-		super(HarmonyClient, self).__init__(
-			user, password, plugin_config=plugin_config)
+		super(HarmonyClient, self).__init__(user, password, plugin_config=plugin_config)
+#		print("Adding event handler")
+#		self.registerHandler(Callback('Example Handler' ,MatchAll(''), message_callback))
 
 	def get_config(self):
 		"""Retrieves the Harmony device configuration.
@@ -33,8 +45,7 @@ class HarmonyClient(sleekxmpp.ClientXMPP):
 		iq_cmd['type'] = 'get'
 		action_cmd = ET.Element('oa')
 		action_cmd.attrib['xmlns'] = 'connect.logitech.com'
-		action_cmd.attrib['mime'] = (
-			'vnd.logitech.harmony/vnd.logitech.harmony.engine?config')
+		action_cmd.attrib['mime'] = ('vnd.logitech.harmony/vnd.logitech.harmony.engine?config')
 		iq_cmd.set_payload(action_cmd)
 		result = iq_cmd.send(block=True)
 		payload = result.get_payload()
@@ -54,8 +65,7 @@ class HarmonyClient(sleekxmpp.ClientXMPP):
 		iq_cmd['type'] = 'get'
 		action_cmd = ET.Element('oa')
 		action_cmd.attrib['xmlns'] = 'connect.logitech.com'
-		action_cmd.attrib['mime'] = (
-			'vnd.logitech.harmony/vnd.logitech.harmony.engine?getCurrentActivity')
+		action_cmd.attrib['mime'] = ('vnd.logitech.harmony/vnd.logitech.harmony.engine?getCurrentActivity')
 		iq_cmd.set_payload(action_cmd)
 		result = iq_cmd.send(block=True)
 		payload = result.get_payload()
@@ -109,8 +119,7 @@ class HarmonyClient(sleekxmpp.ClientXMPP):
 		iq_cmd['id'] = '5e518d07-bcc2-4634-ba3d-c20f338d8927-2'
 		action_cmd = ET.Element('oa')
 		action_cmd.attrib['xmlns'] = 'connect.logitech.com'
-		action_cmd.attrib['mime'] = (
-			'vnd.logitech.harmony/vnd.logitech.harmony.engine?holdAction')
+		action_cmd.attrib['mime'] = ('vnd.logitech.harmony/vnd.logitech.harmony.engine?holdAction')
 		action_cmd.text = 'action={"type"::"IRCommand","deviceId"::"'+str(device_id)+'","command"::"'+command+'"}:status=press'
 		iq_cmd.set_payload(action_cmd)
 		result = iq_cmd.send(block=False)
@@ -154,7 +163,7 @@ class HarmonyClient(sleekxmpp.ClientXMPP):
 			self.start_activity(-1)
 		return True
 
-def create_and_connect_client(ip_address, port, token):
+def create_and_connect_client(ip_address, port, token, message_callback=None):
 	"""Creates a Harmony client and initializes session.
 
 	Args:
@@ -165,9 +174,8 @@ def create_and_connect_client(ip_address, port, token):
 	Returns:
 	  An instance of HarmonyClient that is connected.
 	"""
-	client = HarmonyClient(token)
-	client.connect(address=(ip_address, port),
-				   use_tls=False, use_ssl=False)
+	client = HarmonyClient(token, message_callback)
+	client.connect(address=(ip_address, port), use_tls=False, use_ssl=False)
 	client.process(block=False)
 
 	while not client.sessionstarted:
