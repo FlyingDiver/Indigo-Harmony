@@ -15,15 +15,25 @@
 			</Field>
 		</ConfigUI>
 		<States>
-			<State id="activityName">
+			<State id="currentActivityName">
 				<ValueType>String</ValueType>
 				<TriggerLabel>Current Activity</TriggerLabel>
 				<ControlPageLabel>Current Activity</ControlPageLabel>
 			</State>
-			<State id="activityNum">
+			<State id="currentActivityNum">
 				<ValueType>String</ValueType>
 				<TriggerLabel>Activity Number</TriggerLabel>
 				<ControlPageLabel>Activity Number</ControlPageLabel>
+			</State>
+			<State id="notifyActivityId">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Notify Activity ID</TriggerLabel>
+				<ControlPageLabel>Notify Activity ID</ControlPageLabel>
+			</State>
+			<State id="notifyActivityStatus">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Notify Activity Status</TriggerLabel>
+				<ControlPageLabel>Notify Activity Status</ControlPageLabel>
 			</State>
 		</States>
 		<UiDisplayStateId>activityName</UiDisplayStateId>
