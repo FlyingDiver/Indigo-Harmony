@@ -16,21 +16,24 @@ from harmony import client as harmony_client
 
 kCurDevVersCount = 0		# current version of plugin devices
 
-def message_callback(msg):
-	if msg.startswith("<message "):
-		indigo.server.debugLog(self.device.name + u": message event received, data = " + str(msg))
-	else:
-		indigo.server.debugLog(self.device.name + u": non-message event received")
-		
-class MatchAll(MatcherBase):
+
+class MatchMessage(MatcherBase):
 	def __init__(self, criteria):
 		self._criteria = criteria
 
 	def match(self, xml):
-		"""Check if a stanza matches the stored criteria.
-		Meant to be overridden.
-		"""
-		return True
+	
+		if type(xml) == sleekxmpp.stanza.stream_features.StreamFeatures:
+			return False
+		elif type(xml) == sleekxmpp.features.feature_mechanisms.stanza.success.Success:
+			return False
+		elif type(xml) == sleekxmpp.stanza.iq.Iq:
+			return False
+		elif type(xml) == sleekxmpp.stanza.message.Message:
+			return True
+		else:
+			indigo.server.log(u"MatchMessage: %s" % type(xml))
+			return False
 
 class HubClient(object):
 
@@ -55,9 +58,9 @@ class HubClient(object):
 			if not self.session_token:
 				self.plugin.debugLog(device.name + u': Could not swap login token for session token.')
 
-			self.client = harmony_client.HarmonyClient(self.session_token, message_callback)
-			self.client.registerHandler(Callback('Message Handler', MatchAll(''), message_callback))
-	
+			self.client = harmony_client.HarmonyClient(self.session_token)
+			self.client.registerHandler(Callback('Hub Message Handler', MatchMessage(''), self.messageHandler))
+
 			self.client.connect(address=(self.harmony_ip, self.harmony_port), use_tls=False, use_ssl=False)
 			self.client.process(block=False)
 			while not self.client.sessionstarted:
@@ -73,7 +76,6 @@ class HubClient(object):
 			
 		try:	
 			self.current_activity_id = str(self.client.get_current_activity())
-			self.plugin.debugLog(self.device.name + u": current_activity_id = " + self.current_activity_id)
 		except sleekxmpp.exceptions.IqTimeout:
 			self.plugin.debugLog(self.device.name + u": Time out in client.get_current_activity")
 			self.current_activity_id = 0
@@ -86,9 +88,9 @@ class HubClient(object):
 			
 		for activity in self.config["activity"]:
 			if activity["id"] == "-1":
-				if self.current_activity_id == '-1':
-					self.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
-					self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
+				if '-1' == self.current_activity_id:
+					self.device.updateStateOnServer(key="currentActivityNum", value=activity[u'id'])
+					self.device.updateStateOnServer(key="currentActivityName", value=activity[u'label'])
 			else:
 				try:
 					action = json.loads(activity["controlGroup"][0]["function"][0]["action"])			
@@ -98,12 +100,47 @@ class HubClient(object):
 				except Exception as e:			# Not all Activities have sound devices...
 					self.activityList[activity[u'id']] = {'label': activity[u'label'], 'type': activity[u'type'] }
 
-				if self.current_activity_id == activity[u'id']:
-					self.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
-					self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
-				self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'])
-		
-		
+				if activity[u'id'] == self.current_activity_id:
+					self.device.updateStateOnServer(key="currentActivityNum", value=activity[u'id'])
+					self.device.updateStateOnServer(key="currentActivityName", value=activity[u'label'])
+				self.plugin.debugLog(device.name + u": Activity: %s (%s)" % (activity[u'label'], activity[u'id']))
+
+		self.plugin.debugLog(self.device.name + u": current_activity_id = " + self.current_activity_id)
+
+
+	def messageHandler(self, data):
+		root = ET.fromstring(str(data))
+		for child in root:
+			if "event" in child.tag:
+				if "notify" in str(child.attrib):
+					try:
+						content = json.loads(child.text)
+						self.plugin.debugLog(self.device.name + u": messageHandler: Event notify, activityId = %s, activityStatus = %s" % (content['activityId'], content['activityStatus']))
+						self.device.updateStateOnServer(key="notifyActivityId", value=content['activityId'])
+						self.device.updateStateOnServer(key="notifyActivityStatus", value=content['activityStatus'])
+					except Exception as e:
+						self.plugin.debugLog(self.device.name + u": Event notify child.text parse error = " + str(e))
+						
+				elif "startActivityFinished" in str(child.attrib):
+					pairs = child.text.split(':')
+					activityId = pairs[0].split('=')
+					errorCode = pairs[1].split('=')
+					errorString = pairs[2].split('=')
+					self.plugin.debugLog(self.device.name + u": messageHandler: Event startActivityFinished, activityId = %s, errorCode = %s, errorString = %s" % (activityId[1], errorCode[1], errorString[1]))
+					for activity in self.config["activity"]:
+						if activityId[1] == activity[u'id']:
+							self.device.updateStateOnServer(key="currentActivityNum", value=activity[u'id'])
+							self.device.updateStateOnServer(key="currentActivityName", value=activity[u'label'])
+							break	
+				else:
+					self.plugin.errorLog(self.device.name + u": messageHandler: Unknown Event Type: " + child.attrib)
+			
+			else:
+				self.plugin.errorLog(self.device.name + u": messageHandler: Unknown Message Type: " + child.tag)
+				
+			
+	
+################################################################################
 class Plugin(indigo.PluginBase):
 					
 	########################################
@@ -143,24 +180,23 @@ class Plugin(indigo.PluginBase):
 			
 				# for now, poll the hubs for activity changes
 				
-				if time.time() > self.next_poll:
-					for id, hub in self.hubDict.items():
-						try:
-							hub.current_activity_id = str(hub.client.get_current_activity())
-						except sleekxmpp.exceptions.IqTimeout:
-							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", time out.")
-						except sleekxmpp.exceptions.IqError:
-							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", IqError.")
+#				if time.time() > self.next_poll:
+#					for id, hub in self.hubDict.items():
+#						try:
+#							hub.current_activity_id = str(hub.client.get_current_activity())
+#						except sleekxmpp.exceptions.IqTimeout:
+#							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", time out.")
+#							pass
 #						except:
 #							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", get_current_activity Error: " + str(sys.exc_info()[0]))
-						else:
-							for activity in hub.config["activity"]:
-								if hub.current_activity_id == activity[u'id']:
-									hub.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
-									hub.device.updateStateOnServer(key="activityName", value=activity[u'label'])
-									break	
-							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", current activity: " + activity[u'label'])
-					self.next_poll = time.time() + 120.0
+#						else:
+#							for activity in hub.config["activity"]:
+#								if hub.current_activity_id == activity[u'id']:
+#									hub.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
+#									hub.device.updateStateOnServer(key="activityName", value=activity[u'label'])
+#									break	
+#							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", current activity: " + activity[u'label'])
+#					self.next_poll = time.time() + 120.0
 
 				# Plugin Update check
 				
@@ -242,17 +278,17 @@ class Plugin(indigo.PluginBase):
 	#
 	def deviceStartComm(self, device):
 						
-		instanceVers = int(device.pluginProps.get('devVersCount', 0))
-		self.debugLog(device.name + u": Device Current Version = " + str(instanceVers))
+#		instanceVers = int(device.pluginProps.get('devVersCount', 0))
+#		self.debugLog(device.name + u": Device Current Version = " + str(instanceVers))
 
-		if instanceVers >= kCurDevVersCount:
-			self.debugLog(device.name + u": Device Version is up to date")
+#		if instanceVers >= kCurDevVersCount:
+#			self.debugLog(device.name + u": Device Version is up to date")
 			
-		elif instanceVers < kCurDevVersCount:
-			newProps = device.pluginProps
+#		elif instanceVers < kCurDevVersCount:
+#			newProps = device.pluginProps
 
-		else:
-			self.errorLog(u"Unknown device version: " + str(instanceVers) + " for device " + device.name)					
+#		else:
+#			self.errorLog(u"Unknown device version: " + str(instanceVers) + " for device " + device.name)					
 			
 		if len(device.pluginProps) < 3:
 			self.errorLog(u"Server \"%s\" is misconfigured - disabling" % device.name)
@@ -306,16 +342,16 @@ class Plugin(indigo.PluginBase):
 		activityLabel = hub.activityList[activityID]["label"]
 		self.debugLog(hubDevice.name + u": Start Activity - " + activityLabel)
 		hub.client.start_activity(int(activityID))
-		hub.device.updateStateOnServer(key="activityNum", value=activityID)
-		hub.device.updateStateOnServer(key="activityName", value=activityLabel)
+		hub.device.updateStateOnServer(key="currentActivityNum", value=activityID)
+		hub.device.updateStateOnServer(key="currentactivityName", value=activityLabel)
 
 	def powerOff(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		hub = self.hubDict[int(hubDevice.id)]
 		self.debugLog(hubDevice.name + u": Power Off")
 		hub.client.start_activity(-1)
-		hub.device.updateStateOnServer(key="activityNum", value="-1")
-		hub.device.updateStateOnServer(key="activityName", value="PowerOff")
+		hub.device.updateStateOnServer(key="currentActivityNum", value="-1")
+		hub.device.updateStateOnServer(key="currentActivityName", value="PowerOff")
 
 	def volumeMute(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]

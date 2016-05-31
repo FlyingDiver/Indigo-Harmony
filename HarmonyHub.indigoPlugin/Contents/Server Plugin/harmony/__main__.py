@@ -5,6 +5,7 @@
 import argparse
 import logging
 import sys
+import json
 
 from harmony import auth
 from harmony import client as harmony_client
