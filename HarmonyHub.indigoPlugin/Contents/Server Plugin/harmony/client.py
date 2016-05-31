@@ -12,15 +12,46 @@ LOGGER = logging.getLogger(__name__)
 from sleekxmpp.xmlstream.matcher.base import MatcherBase
 from sleekxmpp.xmlstream.handler import Callback
 
-class MatchAll(MatcherBase):
-    def __init__(self, criteria):
-        self._criteria = criteria
+import indigo
 
-    def match(self, xml):
-        """Check if a stanza matches the stored criteria.
-        Meant to be overridden.
-        """
-        return True
+class MatchAll(MatcherBase):
+	def __init__(self, criteria):
+		self._criteria = criteria
+
+	def match(self, xml):
+		"""Check if a stanza matches the stored criteria.
+		Meant to be overridden.
+		"""
+		return True
+
+class MatchNone(MatcherBase):
+	def __init__(self, criteria):
+		self._criteria = criteria
+
+	def match(self, xml):
+		"""Check if a stanza matches the stored criteria.
+		Meant to be overridden.
+		"""
+		return False
+
+class MatchMessage(MatcherBase):
+	def __init__(self, criteria):
+		self._criteria = criteria
+
+	def match(self, xml):
+	
+		if type(xml) == sleekxmpp.stanza.stream_features.StreamFeatures:
+			indigo.server.log(u"MatchMessage: sleekxmpp.stanza.stream_features.StreamFeatures")
+		elif type(xml) == sleekxmpp.features.feature_mechanisms.stanza.success.Success:
+			indigo.server.log(u"MatchMessage: sleekxmpp.features.feature_mechanisms.stanza.success.Success")
+		elif type(xml) == sleekxmpp.stanza.iq.Iq:
+			indigo.server.log(u"MatchMessage: sleekxmpp.stanza.iq.Iq %s" % xml['type'])
+		elif type(xml) == sleekxmpp.stanza.message.Message:
+			indigo.server.log(u"MatchMessage: sleekxmpp.stanza.message.Message, contents:\n%s" % str(xml))
+		else:
+			indigo.server.log(u"MatchMessage: %s" % type(xml))
+		
+		return False
 
 class HarmonyClient(sleekxmpp.ClientXMPP):
 	"""An XMPP client for connecting to the Logitech Harmony."""
@@ -33,7 +64,7 @@ class HarmonyClient(sleekxmpp.ClientXMPP):
 			'feature_mechanisms': {'unencrypted_plain': True},
 		}
 		super(HarmonyClient, self).__init__(user, password, plugin_config=plugin_config)
-#        self.registerHandler(Callback('Example Handler',MatchAll(''),message_callback))
+		self.registerHandler(Callback('Example Handler', MatchMessage(''), message_callback))
 
 	def get_config(self):
 		"""Retrieves the Harmony device configuration.

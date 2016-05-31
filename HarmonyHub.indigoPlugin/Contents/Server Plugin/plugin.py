@@ -15,6 +15,11 @@ from harmony import client as harmony_client
 
 kCurDevVersCount = 0		# current version of plugin devices
 
+def message_callback(self, data):
+	self.plugin.debugLog(u":message_callback = " + str(stanza))
+	
+
+
 class HubClient(object):
 
 	def __init__(self, plugin, device):
@@ -38,9 +43,9 @@ class HubClient(object):
 			if not self.session_token:
 				self.plugin.debugLog(device.name + u': Could not swap login token for session token.')
 
-			self.client = harmony_client.HarmonyClient(self.session_token)
-			self.client.add_event_handler("iq", self.iq_stanza)
-			self.client.add_event_handler("message", self.message)
+			self.client = harmony_client.HarmonyClient(self.session_token, message_callback)
+#			self.client.add_event_handler("iq", self.iq_stanza)
+#			self.client.add_event_handler("message", self.message)
 
 			self.client.connect(address=(self.harmony_ip, self.harmony_port), use_tls=False, use_ssl=False)
 			self.client.process(block=False)
@@ -79,11 +84,11 @@ class HubClient(object):
 					self.device.updateStateOnServer(key="activityName", value=activity[u'label'])
 				self.plugin.debugLog(device.name + u": Activity: " + activity[u'label'])
 		
-	def iq_stanza(self, data):
-		self.plugin.debugLog(self.device.name + u": iq event received, data = " + str(stanza))
+#	def iq_stanza(self, data):
+#		self.plugin.debugLog(self.device.name + u": iq event received, data = " + str(stanza))
 	
-	def message(self, data):
-		self.plugin.debugLog(self.device.name + u": message event received, data = " + str(msg))
+#	def message(self, data):
+#		self.plugin.debugLog(self.device.name + u": message event received, data = " + str(msg))
 	
 ################################################################################
 class Plugin(indigo.PluginBase):
