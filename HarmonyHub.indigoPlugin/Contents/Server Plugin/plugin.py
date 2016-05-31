@@ -123,7 +123,9 @@ class Plugin(indigo.PluginBase):
 		
 		self.updater = GitHubPluginUpdater(self)
 		self.updater.checkForUpdate()
-		self.next_update_check = time.time() + float(self.pluginPrefs.get('updateFrequency', 24)) * 60.0 * 60.0
+		self.updateFrequency = self.pluginPrefs.get('updateFrequency', 24)
+		if self.updateFrequency > 0:
+			self.next_update_check = time.time() + float(self.updateFrequency) * 60.0 * 60.0
 
 		self.hubDict = dict()
 		self.triggers = { }
@@ -162,9 +164,10 @@ class Plugin(indigo.PluginBase):
 
 				# Plugin Update check
 				
-				if time.time() > self.next_update_check:
-					self.updater.checkForUpdate()
-					self.next_update_check = time.time() + float(self.pluginPrefs['updateFrequency']) * 60.0 * 60.0
+				if self.updateFrequency > 0:
+					if time.time() > self.next_update_check:
+						self.updater.checkForUpdate()
+						self.next_update_check = time.time() + float(self.pluginPrefs['updateFrequency']) * 60.0 * 60.0
 
 				self.sleep(1.0) 
 								
@@ -216,10 +219,10 @@ class Plugin(indigo.PluginBase):
 		errorMsgDict = indigo.Dict()
 		try:
 			poll = int(valuesDict['updateFrequency'])
-			if (poll <= 0) or (poll > 24):
+			if (poll < 0) or (poll > 24):
 				raise
 		except:
-			errorMsgDict['updateFrequency'] = u"Update frequency is invalid - enter a valid number (between 1 and 24)"
+			errorMsgDict['updateFrequency'] = u"Update frequency is invalid - enter a valid number (between 0 and 24)"
 		if len(errorMsgDict) > 0:
 			return (False, valuesDict, errorMsgDict)
 		return (True, valuesDict)
