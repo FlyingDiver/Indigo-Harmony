@@ -1,8 +1,23 @@
 <?xml version="1.0"?>
 <Events>
-	<SupportURL>http://forums.indigodomo.com/viewtopic.php?f=177</SupportURL>
-    <Event id="hubMessage">
-        <Name>Update message from Harmony Hub</Name>
+	<SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
+	<Event id="activityNotification">
+        <Name>Activity Notification</Name>
+      	<ConfigUI>
+        	<Field id="hubID" type="menu">
+            	<Label>Select Hub:</Label>
+            	<List class="self" filter="" method="pickHub" dynamicReload="true"/>
+			</Field>			
+      	</ConfigUI>
+    </Event>
+	<Event id="automationNotification">
+        <Name>Automation Notification</Name>
+      	<ConfigUI>
+        	<Field id="hubID" type="menu">
+            	<Label>Select Hub:</Label>
+            	<List class="self" filter="" method="pickHub" dynamicReload="true"/>
+			</Field>			
+      	</ConfigUI>
     </Event>
 </Events>
 

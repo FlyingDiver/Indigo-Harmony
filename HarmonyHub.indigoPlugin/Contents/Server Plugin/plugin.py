@@ -16,7 +16,6 @@ from harmony import client as harmony_client
 
 kCurDevVersCount = 0		# current version of plugin devices
 
-
 class MatchMessage(MatcherBase):
 	def __init__(self, criteria):
 		self._criteria = criteria
@@ -91,6 +90,7 @@ class HubClient(object):
 				if '-1' == self.current_activity_id:
 					self.device.updateStateOnServer(key="currentActivityNum", value=activity[u'id'])
 					self.device.updateStateOnServer(key="currentActivityName", value=activity[u'label'])
+
 			else:
 				try:
 					action = json.loads(activity["controlGroup"][0]["function"][0]["action"])			
@@ -103,6 +103,7 @@ class HubClient(object):
 				if activity[u'id'] == self.current_activity_id:
 					self.device.updateStateOnServer(key="currentActivityNum", value=activity[u'id'])
 					self.device.updateStateOnServer(key="currentActivityName", value=activity[u'label'])
+
 				self.plugin.debugLog(device.name + u": Activity: %s (%s)" % (activity[u'label'], activity[u'id']))
 
 		self.plugin.debugLog(self.device.name + u": current_activity_id = " + self.current_activity_id)
@@ -113,27 +114,76 @@ class HubClient(object):
 		for child in root:
 			if "event" in child.tag:
 				if "notify" in str(child.attrib):
-					try:
-						content = json.loads(child.text)
-						self.plugin.debugLog(self.device.name + u": messageHandler: Event notify, activityId = %s, activityStatus = %s" % (content['activityId'], content['activityStatus']))
-						self.device.updateStateOnServer(key="notifyActivityId", value=content['activityId'])
-						self.device.updateStateOnServer(key="notifyActivityStatus", value=content['activityStatus'])
-					except Exception as e:
-						self.plugin.debugLog(self.device.name + u": Event notify child.text parse error = " + str(e))
-						
+					if "connect.stateDigest" in str(child.attrib):
+						try:
+							content = json.loads(child.text)
+						except Exception as e:
+							self.plugin.errorLog(self.device.name + u": Event state notify child.text parse error = %s" % str(e))
+							self.plugin.errorLog(self.device.name + u": Event state notify child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
+						else:
+							self.plugin.debugLog(self.device.name + u": messageHandler: Event state notify, activityId = %s, activityStatus = %s" % (content['activityId'], content['activityStatus']))
+							self.device.updateStateOnServer(key="notifyActivityId", value=content['activityId'])
+							self.device.updateStateOnServer(key="notifyActivityStatus", value=content['activityStatus'])
+							self.plugin.triggerCheck(self.device, "activityNotification")
+
+					elif "automation.state" in str(child.attrib):
+						self.plugin.debugLog(self.device.name + u": messageHandler: Event automation notify, contents:")
+						try:
+							content = json.loads(child.text)
+						except Exception as e:
+							self.plugin.errorLog(self.device.name + u": Event automation notify child.text parse error = %s" % str(e))
+							self.plugin.errorLog(self.device.name + u": Event automation notify child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
+						else:
+							for key, device in content.items():
+								self.plugin.debugLog(self.device.name + u": Device: %s, status: %s, brightness: %i, on: %r" % (key, device['status'], device['brightness'], device['on']))
+								self.device.updateStateOnServer(key="lastAutomationDevice", value=key)
+								self.device.updateStateOnServer(key="lastAutomationStatus", value=device['status'])
+								self.device.updateStateOnServer(key="lastAutomationBrightness", value=str(device['brightness']))
+								self.device.updateStateOnServer(key="lastAutomationOnState", value=str(device['on']))
+								self.plugin.triggerCheck(self.device, "automationNotification")
+					else:
+						self.plugin.errorLog(self.device.name + u": messageHandler: Unknown Event Type: %s\n%s" % (child.attrib, child.text))
+									
 				elif "startActivityFinished" in str(child.attrib):
-					pairs = child.text.split(':')
-					activityId = pairs[0].split('=')
-					errorCode = pairs[1].split('=')
-					errorString = pairs[2].split('=')
-					self.plugin.debugLog(self.device.name + u": messageHandler: Event startActivityFinished, activityId = %s, errorCode = %s, errorString = %s" % (activityId[1], errorCode[1], errorString[1]))
-					for activity in self.config["activity"]:
-						if activityId[1] == activity[u'id']:
-							self.device.updateStateOnServer(key="currentActivityNum", value=activity[u'id'])
-							self.device.updateStateOnServer(key="currentActivityName", value=activity[u'label'])
-							break	
+					try:
+						pairs = child.text.split(':')
+						activityId = pairs[0].split('=')
+						errorCode = pairs[1].split('=')
+						errorString = pairs[2].split('=')
+					except Exception as e:
+						self.plugin.errorLog(self.device.name + u": Event startActivityFinished child.text parse error = %s" % str(e))
+						self.plugin.errorLog(self.device.name + u": Event startActivityFinished child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
+					else:
+						self.plugin.debugLog(self.device.name + u": messageHandler: Event startActivityFinished, activityId = %s, errorCode = %s, errorString = %s" % (activityId[1], errorCode[1], errorString[1]))
+						for activity in self.config["activity"]:
+							if activityId[1] == activity[u'id']:
+								self.device.updateStateOnServer(key="currentActivityNum", value=activity[u'id'])
+								self.device.updateStateOnServer(key="currentActivityName", value=activity[u'label'])
+								self.plugin.triggerCheck(self.device, "activityNotification")
+								break	
+
+				elif "pressType" in str(child.attrib):
+					try:
+						pressType = child.text.split('=')
+						self.plugin.debugLog(self.device.name + u": messageHandler: Event pressType, Type = %s" % pressType[1])
+					except Exception as e:
+						self.plugin.errorLog(self.device.name + u": Event pressType child.text parse error = %s" % str(e))
+						self.plugin.errorLog(self.device.name + u": Event pressType child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
+
+				elif "startActivity" in str(child.attrib):
+					try:
+						pairs = child.text.split(':')
+						done = pairs[0].split('=')
+						total = pairs[1].split('=')
+						deviceId = pairs[2].split('=')
+					except Exception as e:
+						self.plugin.errorLog(self.device.name + u": Event startActivity child.text parse error = %s" % str(e))
+						self.plugin.errorLog(self.device.name + u": Event startActivity child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
+					else:
+						self.plugin.debugLog(self.device.name + u": messageHandler: Event startActivity, done = %s, total = %s, deviceId = %s" % (done[1], total[1], deviceId[1]))
+
 				else:
-					self.plugin.errorLog(self.device.name + u": messageHandler: Unknown Event Type: " + child.attrib)
+					self.plugin.errorLog(self.device.name + u": messageHandler: Unknown Event Type: %s\n%s" % (child.attrib, child.text))
 			
 			else:
 				self.plugin.errorLog(self.device.name + u": messageHandler: Unknown Message Type: " + child.tag)
@@ -177,27 +227,9 @@ class Plugin(indigo.PluginBase):
 		
 		try:
 			while True:
-			
-				# for now, poll the hubs for activity changes
 				
-#				if time.time() > self.next_poll:
-#					for id, hub in self.hubDict.items():
-#						try:
-#							hub.current_activity_id = str(hub.client.get_current_activity())
-#						except sleekxmpp.exceptions.IqTimeout:
-#							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", time out.")
-#							pass
-#						except:
-#							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", get_current_activity Error: " + str(sys.exc_info()[0]))
-#						else:
-#							for activity in hub.config["activity"]:
-#								if hub.current_activity_id == activity[u'id']:
-#									hub.device.updateStateOnServer(key="activityNum", value=activity[u'id'])
-#									hub.device.updateStateOnServer(key="activityName", value=activity[u'label'])
-#									break	
-#							self.debugLog("runConcurrentThread poll, Device: " + hub.device.name + ", current activity: " + activity[u'label'])
-#					self.next_poll = time.time() + 120.0
-
+				# All hub messages are done in callbacks.  No polling.
+				
 				# Plugin Update check
 				
 				if self.updateFrequency > 0:
@@ -223,7 +255,7 @@ class Plugin(indigo.PluginBase):
 	####################
 
 	def triggerStartProcessing(self, trigger):
-		self.debugLog("Adding Trigger %s (%d)" % (trigger.name, trigger.id))
+		self.debugLog("Adding Trigger %s (%d) - %s" % (trigger.name, trigger.id, trigger.pluginTypeId))
 		assert trigger.id not in self.triggers
 		self.triggers[trigger.id] = trigger
  
@@ -231,21 +263,23 @@ class Plugin(indigo.PluginBase):
 		self.debugLog("Removing Trigger %s (%d)" % (trigger.name, trigger.id))
 		assert trigger.id in self.triggers
 		del self.triggers[trigger.id] 
-
-	def getTriggersForType(self, triggerTypeIds):
-		""" 
-		*triggerTypeIds* is a set or list of trigger type IDs we want
-		to check.  We will give back the list of those types of
-		triggers we know about in a deterministic order.
-		"""
-		t = [ ]
-		for tid, trigger in sorted(self.triggers.iteritems()):
-			if trigger.pluginTypeId in triggerTypeIds:
-				t.append(trigger)
-		return t
 		
-	def triggerCheck(self, device):
-		self.debugLog("Checking Triggers for Device %s (%d)" % (device.name, device.id))
+	def triggerCheck(self, device, eventType):
+#		self.debugLog("Checking %d Triggers for Device: %s (%s), Type: %s" % (len(self.triggers), device.name, device.id, eventType))
+
+		# Execute the trigger if it's the right type and for the right hub device
+			
+		for triggerId, trigger in sorted(self.triggers.iteritems()):
+			self.debugLog("\tChecking Trigger %s (%s), Type: %s" % (trigger.name, trigger.id, trigger.pluginTypeId))
+			if trigger.pluginProps["hubID"] != str(device.id):
+				self.debugLog("\t\tSkipping Trigger %s (%s), wrong hub: %s" % (trigger.name, trigger.id, device.id))
+			else:
+				if trigger.pluginTypeId != eventType:
+					self.debugLog("\t\tSkipping Trigger %s (%s), wrong type: %s" % (trigger.name, trigger.id, eventType))
+				else:
+					self.debugLog("\t\tExecuting Trigger %s (%s) on Device %s (%s)" % (trigger.name, trigger.id, device.name ,device.id))
+					indigo.trigger.execute(trigger)
+			
 	
 			
 	
@@ -344,6 +378,7 @@ class Plugin(indigo.PluginBase):
 		hub.client.start_activity(int(activityID))
 		hub.device.updateStateOnServer(key="currentActivityNum", value=activityID)
 		hub.device.updateStateOnServer(key="currentactivityName", value=activityLabel)
+		self.triggerCheck(hub.device)
 
 	def powerOff(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
@@ -352,6 +387,7 @@ class Plugin(indigo.PluginBase):
 		hub.client.start_activity(-1)
 		hub.device.updateStateOnServer(key="currentActivityNum", value="-1")
 		hub.device.updateStateOnServer(key="currentActivityName", value="PowerOff")
+		self.triggerCheck(hub.device)
 
 	def volumeMute(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]

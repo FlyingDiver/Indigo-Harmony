@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <Actions>
-	<SupportURL>http://forums.indigodomo.com/viewtopic.php?f=177</SupportURL>
+	<SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
 	<Action id="startActivity" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
 		<Name>Start Activity</Name>
         <CallbackMethod>startActivity</CallbackMethod>

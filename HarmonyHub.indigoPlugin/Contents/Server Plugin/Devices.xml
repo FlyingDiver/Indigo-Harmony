@@ -3,7 +3,7 @@
 	<Device type="custom" id="harmonyHub">
 		<Name>Harmony Hub</Name>
 		<ConfigUI>
-			<SupportURL>http://forums.indigodomo.com/viewtopic.php?f=177</SupportURL>
+			<SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
 			<Field id="address" type="textfield">
 				<Label>Hub IP Address:</Label>
 			</Field>
@@ -34,6 +34,31 @@
 				<ValueType>String</ValueType>
 				<TriggerLabel>Notify Activity Status</TriggerLabel>
 				<ControlPageLabel>Notify Activity Status</ControlPageLabel>
+			</State>
+			<State id="lastAutomationDevice">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Last Automation Device</TriggerLabel>
+				<ControlPageLabel>Last Automation Device</ControlPageLabel>
+			</State>
+			<State id="lastAutomationStatus">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Last Automation Status</TriggerLabel>
+				<ControlPageLabel>Last Automation Status</ControlPageLabel>
+			</State>
+			<State id="lastAutomationStatus">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Last Automation Status</TriggerLabel>
+				<ControlPageLabel>Last Automation Status</ControlPageLabel>
+			</State>
+			<State id="lastAutomationOnState">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Last Automation OnState</TriggerLabel>
+				<ControlPageLabel>Last Automation OnState</ControlPageLabel>
+			</State>
+			<State id="lastAutomationBrightness">
+				<ValueType>String</ValueType>
+				<TriggerLabel>Last Automation Brightness</TriggerLabel>
+				<ControlPageLabel>Last Automation Brightness</ControlPageLabel>
 			</State>
 		</States>
 		<UiDisplayStateId>activityName</UiDisplayStateId>
