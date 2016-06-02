@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <PluginConfig>
-	<SupportURL>http://forums.indigodomo.com/viewtopic.php?f=177</SupportURL>
+	<SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
 	<Field id="updateFrequency" type="textfield" defaultValue="24">
 		<Label>Check for plugin update frequency (hours):</Label>
 	</Field>
