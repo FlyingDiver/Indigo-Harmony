@@ -182,6 +182,26 @@ class HubClient(object):
 					else:
 						self.plugin.debugLog(self.device.name + u": messageHandler: Event startActivity, done = %s, total = %s, deviceId = %s" % (done[1], total[1], deviceId[1]))
 
+				elif "helpdiscretes" in str(child.attrib):
+					try:
+						pairs = child.text.split(':')
+						if len(pairs) > 1:
+							done = pairs[0].split('=')
+							total = pairs[1].split('=')
+							deviceId = pairs[2].split('=')
+							isHelpDiscretes = pairs[2].split('=')
+						else:
+							deviceId = pairs[0].split('=')
+							
+					except Exception as e:
+						self.plugin.errorLog(self.device.name + u": Event startActivity child.text parse error = %s" % str(e))
+						self.plugin.errorLog(self.device.name + u": Event startActivity child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
+					else:
+						if len(pairs) > 1:
+							self.plugin.debugLog(self.device.name + u": messageHandler: Event helpdiscretes, done = %s, total = %s, deviceId = %s, isHelpDiscretes = %s" % (done[1], total[1], deviceId[1], isHelpDiscretes[1]))
+						else:
+							self.plugin.debugLog(self.device.name + u": messageHandler: Event helpdiscretes, deviceId = %s" % deviceId[1])
+						
 				else:
 					self.plugin.errorLog(self.device.name + u": messageHandler: Unknown Event Type: %s\n%s" % (child.attrib, child.text))
 			
@@ -265,7 +285,6 @@ class Plugin(indigo.PluginBase):
 		del self.triggers[trigger.id] 
 		
 	def triggerCheck(self, device, eventType):
-#		self.debugLog("Checking %d Triggers for Device: %s (%s), Type: %s" % (len(self.triggers), device.name, device.id, eventType))
 
 		# Execute the trigger if it's the right type and for the right hub device
 			
@@ -375,64 +394,122 @@ class Plugin(indigo.PluginBase):
 		activityID = pluginAction.props["activity"]
 		activityLabel = hub.activityList[activityID]["label"]
 		self.debugLog(hubDevice.name + u": Start Activity - " + activityLabel)
-		hub.client.start_activity(int(activityID))
-		hub.device.updateStateOnServer(key="currentActivityNum", value=activityID)
-		hub.device.updateStateOnServer(key="currentactivityName", value=activityLabel)
-		self.triggerCheck(hub.device)
+		try:	
+			hub.client.start_activity(int(activityID))
+		except sleekxmpp.exceptions.IqTimeout:
+			self.plugin.debugLog(self.device.name + u": Time out in hub.client.startActivity")
+		except sleekxmpp.exceptions.IqError:
+			self.plugin.debugLog(self.device.name + u": IqError in hub.client.startActivity")
+		except Exception as e:
+			self.plugin.debugLog(self.device.name + u": Error in hub.client.startActivity: " + str(e))
+		else:
+			hub.device.updateStateOnServer(key="currentActivityNum", value=activityID)
+			hub.device.updateStateOnServer(key="currentActivityName", value=activityLabel)
+			self.triggerCheck(hub.device, "activityNotification")
 
 	def powerOff(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		hub = self.hubDict[int(hubDevice.id)]
 		self.debugLog(hubDevice.name + u": Power Off")
-		hub.client.start_activity(-1)
-		hub.device.updateStateOnServer(key="currentActivityNum", value="-1")
-		hub.device.updateStateOnServer(key="currentActivityName", value="PowerOff")
-		self.triggerCheck(hub.device)
+		try:	
+			hub.client.start_activity(-1)
+		except sleekxmpp.exceptions.IqTimeout:
+			self.plugin.debugLog(self.device.name + u": Time out in hub.client.startActivity")
+		except sleekxmpp.exceptions.IqError:
+			self.plugin.debugLog(self.device.name + u": IqError in hub.client.startActivity")
+		except Exception as e:
+			self.plugin.debugLog(self.device.name + u": Error in hub.client.startActivity: " + str(e))
+		else:
+			hub.device.updateStateOnServer(key="currentActivityNum", value="-1")
+			hub.device.updateStateOnServer(key="currentActivityName", value="PowerOff")
+			self.triggerCheck(hub.device, "activityNotification")
 
 	def volumeMute(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		hub = self.hubDict[int(hubDevice.id)]
 		soundDev = hub.activityList[hub.current_activity_id]["soundDev"]
 		self.debugLog(hubDevice.name + u": sending Mute to " + soundDev)
-		hub.client.send_command(soundDev, "Mute")
+		try:	
+			hub.client.send_command(soundDev, "Mute")
+		except sleekxmpp.exceptions.IqTimeout:
+			self.plugin.debugLog(self.device.name + u": Time out in hub.client.send_command")
+		except sleekxmpp.exceptions.IqError:
+			self.plugin.debugLog(self.device.name + u": IqError in hub.client.send_command")
+		except Exception as e:
+			self.plugin.debugLog(self.device.name + u": Error in hub.client.send_command: " + str(e))
 		
 	def volumeDown(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		hub = self.hubDict[int(hubDevice.id)]
 		soundDev = hub.activityList[hub.current_activity_id]["soundDev"]
 		self.debugLog(hubDevice.name + u": sending VolumeDown to " + soundDev)
-		hub.client.send_command(soundDev, "VolumeDown")
+		try:	
+			hub.client.send_command(soundDev, "VolumeDown")
+		except sleekxmpp.exceptions.IqTimeout:
+			self.plugin.debugLog(self.device.name + u": Time out in hub.client.send_command")
+		except sleekxmpp.exceptions.IqError:
+			self.plugin.debugLog(self.device.name + u": IqError in hub.client.send_command")
+		except Exception as e:
+			self.plugin.debugLog(self.device.name + u": Error in hub.client.send_command: " + str(e))
 		
 	def volumeUp(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
 		hub = self.hubDict[int(hubDevice.id)]
 		soundDev = hub.activityList[hub.current_activity_id]["soundDev"]
 		self.debugLog(hubDevice.name + u": sending VolumeUp to " + soundDev)
-		hub.client.send_command(soundDev, "VolumeUp")
+		try:	
+			hub.client.send_command(soundDev, "VolumeUp")
+		except sleekxmpp.exceptions.IqTimeout:
+			self.plugin.debugLog(self.device.name + u": Time out in hub.client.send_command")
+		except sleekxmpp.exceptions.IqError:
+			self.plugin.debugLog(self.device.name + u": IqError in hub.client.send_command")
+		except Exception as e:
+			self.plugin.debugLog(self.device.name + u": Error in hub.client.send_command: " + str(e))
 
 	def sendActivityCommand(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
-		client = self.hubDict[int(hubDevice.id)].client
+		hub = self.hubDict[int(hubDevice.id)]
 		command = pluginAction.props["command"]
 		activity = pluginAction.props["activity"]
 		self.debugLog(hubDevice.name + u": sendActivityCommand: " + command + " to " + device)
-		client.send_command(device, command)
+		try:	
+			hub.client.send_command(device, command)
+		except sleekxmpp.exceptions.IqTimeout:
+			self.plugin.debugLog(self.device.name + u": Time out in hub.client.send_command")
+		except sleekxmpp.exceptions.IqError:
+			self.plugin.debugLog(self.device.name + u": IqError in hub.client.send_command")
+		except Exception as e:
+			self.plugin.debugLog(self.device.name + u": Error in hub.client.send_command: " + str(e))
 
 	def sendDeviceCommand(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
-		client = self.hubDict[int(hubDevice.id)].client
+		hub = self.hubDict[int(hubDevice.id)]
 		command = pluginAction.props["command"]
 		device = pluginAction.props["device"]
 		self.debugLog(hubDevice.name + u": sendDeviceCommand: " + command + " to " + device)
-		client.send_command(device, command)
+		try:	
+			hub.client.send_command(device, command)
+		except sleekxmpp.exceptions.IqTimeout:
+			self.plugin.debugLog(self.device.name + u": Time out in hub.client.send_command")
+		except sleekxmpp.exceptions.IqError:
+			self.plugin.debugLog(self.device.name + u": IqError in hub.client.send_command")
+		except Exception as e:
+			self.plugin.debugLog(self.device.name + u": Error in hub.client.send_command: " + str(e))
 
 	def sendCommand(self, pluginAction):
 		hubDevice = indigo.devices[pluginAction.deviceId]
-		client = self.hubDict[int(hubDevice.id)].client
+		hub = self.hubDict[int(hubDevice.id)]
 		command = pluginAction.props["command"]
 		device = pluginAction.props["device"]
 		self.debugLog(hubDevice.name + u": sendCommand: " + command + " to " + device)
-		client.send_command(device, command)
+		try:	
+			hub.client.send_command(device, command)
+		except sleekxmpp.exceptions.IqTimeout:
+			self.plugin.debugLog(self.device.name + u": Time out in hub.client.send_command")
+		except sleekxmpp.exceptions.IqError:
+			self.plugin.debugLog(self.device.name + u": IqError in hub.client.send_command")
+		except Exception as e:
+			self.plugin.debugLog(self.device.name + u": Error in hub.client.send_command: " + str(e))
 
 	########################################
 	# Menu Methods
