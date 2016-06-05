@@ -61,6 +61,6 @@
 				<ControlPageLabel>Last Automation Brightness</ControlPageLabel>
 			</State>
 		</States>
-		<UiDisplayStateId>activityName</UiDisplayStateId>
+		<UiDisplayStateId>currentActivityName</UiDisplayStateId>
 	</Device>
 </Devices>

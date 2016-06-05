@@ -82,13 +82,4 @@
 		<Name>Volume Up</Name>
         <CallbackMethod>volumeUp</CallbackMethod>
 	</Action>
-	<Action id="setChannel" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
-		<Name>Change Channel</Name>
-        <CallbackMethod>setChannel</CallbackMethod>
-		<ConfigUI>
-			<Field id="channel" type="textfield">
-				<Label>Channel:</Label>
-			</Field>
-		</ConfigUI>
-	</Action>
 </Actions>
