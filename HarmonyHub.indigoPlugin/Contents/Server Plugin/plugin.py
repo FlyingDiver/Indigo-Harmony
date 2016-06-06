@@ -521,7 +521,8 @@ class Plugin(indigo.PluginBase):
 						
 		command = pluginAction.props["command"]
 		activity = pluginAction.props["activity"]
-		self.debugLog(hubDevice.name + u": sendActivityCommand: " + command + " to " + device)
+		device = pluginAction.props["device"]
+		self.debugLog(hubDevice.name + u": sendActivityCommand: " + command + " to " + device + " for " + activity)
 		try:	
 			hub.client.send_command(device, command)
 		except sleekxmpp.exceptions.IqTimeout:
@@ -738,7 +739,7 @@ class Plugin(indigo.PluginBase):
 		elif typeId == "sendActivityCommand":
 			self.debugLog(u"validateActionConfigUi sendActivityCommand")
 
-			config = self.hubDict[targetId].config
+			config = self.hubDict[actionId].config
 			for activity in config["activity"]:
 				if activity["id"] != valuesDict['activity']:
 					continue
