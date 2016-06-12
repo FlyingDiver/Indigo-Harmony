@@ -43,30 +43,45 @@ class HubClient(object):
 		
 		self.harmony_ip = device.pluginProps['address']
 		self.harmony_port = 5222
+		
+		self.ready = False
 	
-		self.auth_token = auth.login(device.pluginProps['harmonyLogin'], device.pluginProps['harmonyPassword'])
-		if not self.auth_token:
-			self.plugin.debugLog(device.name + u': Could not get token from Logitech server.')
-
 		try:	
 			self.auth_token = auth.login(device.pluginProps['harmonyLogin'], device.pluginProps['harmonyPassword'])
 			if not self.auth_token:
 				self.plugin.debugLog(device.name + u': Could not get token from Logitech server.')
 
-			self.session_token = auth.swap_auth_token(self.harmony_ip, self.harmony_port, self.auth_token)
+			self.client = auth.SwapAuthToken(self.auth_token)
+#			self.plugin.debugLog(device.name + u': Calling self.client.connect()')
+			if not self.client.connect(address=(self.harmony_ip, self.harmony_port), reattempt=False, use_tls=False, use_ssl=False):
+				raise Exception("connect failure on SwapAuthToken")
+				
+#			self.plugin.debugLog(device.name + u': Calling self.client.process()')
+			self.client.process(block=False)
+			while not self.client.uuid:
+				self.plugin.debugLog(device.name + u": Waiting for client.uuid")
+				time.sleep(0.5)
+			self.session_token = self.client.uuid
+			
 			if not self.session_token:
 				self.plugin.debugLog(device.name + u': Could not swap login token for session token.')
 
 			self.client = harmony_client.HarmonyClient(self.session_token)
 			self.client.registerHandler(Callback('Hub Message Handler', MatchMessage(''), self.messageHandler))
 
-			self.client.connect(address=(self.harmony_ip, self.harmony_port), use_tls=False, use_ssl=False)
+			if not self.client.connect(address=(self.harmony_ip, self.harmony_port), reattempt=False, use_tls=False, use_ssl=False):
+				raise Exception("connect failure on HarmonyClient")
+				
 			self.client.process(block=False)
 			while not self.client.sessionstarted:
 				self.plugin.debugLog(device.name + u": Waiting for client.sessionstarted")
-				time.sleep(0.1)
+				time.sleep(0.5)
+				
+			self.ready = True
+				
 		except Exception as e:
 			self.plugin.debugLog(device.name + u": Error setting up hub connection: " + str(e))
+			return
 			
 		try:	
 			self.config = self.client.get_config()
@@ -244,8 +259,6 @@ class Plugin(indigo.PluginBase):
 
 
 	def runConcurrentThread(self):
-
-		self.next_poll = 0.0
 		
 		try:
 			while True:
@@ -267,11 +280,10 @@ class Plugin(indigo.PluginBase):
 
 	####################
 
-	def getDeviceConfigUiValues(self, pluginProps, typeId, devId):
-		self.debugLog("getDeviceConfigUiValues, typeID = " + typeId)
-		valuesDict = indigo.Dict(pluginProps)
-		errorsDict = indigo.Dict()
-		return (valuesDict, errorsDict)
+#	def getDeviceConfigUiValues(self, pluginProps, typeId, devId):
+#		valuesDict = indigo.Dict(pluginProps)
+#		errorsDict = indigo.Dict()
+#		return (valuesDict, errorsDict)
 	  
 	
 	####################
@@ -334,47 +346,34 @@ class Plugin(indigo.PluginBase):
 	def deviceStartComm(self, device):
 		self.debugLog(u'Called deviceStartComm(self, device): %s (%s)' % (device.name, device.id))
 						
-#		instanceVers = int(device.pluginProps.get('devVersCount', 0))
-#		self.debugLog(device.name + u": Device Current Version = " + str(instanceVers))
+		instanceVers = int(device.pluginProps.get('devVersCount', 0))
+		self.debugLog(device.name + u": Device Current Version = " + str(instanceVers))
 
-#		if instanceVers >= kCurDevVersCount:
-#			self.debugLog(device.name + u": Device Version is up to date")
+		if instanceVers >= kCurDevVersCount:
+			self.debugLog(device.name + u": Device Version is up to date")
 			
-#		elif instanceVers < kCurDevVersCount:
-#			newProps = device.pluginProps
+		elif instanceVers < kCurDevVersCount:
+			newProps = device.pluginProps
 
-#		else:
-#			self.errorLog(u"Unknown device version: " + str(instanceVers) + " for device " + device.name)					
+		else:
+			self.errorLog(u"Unknown device version: " + str(instanceVers) + " for device " + device.name)					
 			
-		if len(device.pluginProps) < 3:
-			self.errorLog(u"Server \"%s\" is misconfigured - disabling" % device.name)
-			indigo.device.enable(device, value=False)
-				
-		else:			
-			if device.id not in self.hubDict:
-				if device.deviceTypeId == "harmonyHub":
-					self.debugLog(u"%s: Starting harmonyHub device (%s)" % (device.name, device.id))
-					self.hubDict[device.id] = HubClient(self, device)			
-					
+		if device.id not in self.hubDict:
+			if device.deviceTypeId == "harmonyHub":
+				self.debugLog(u"%s: Starting harmonyHub device (%s)" % (device.name, device.id))
+				hubClient = HubClient(self, device)	
+				if (hubClient.ready):		
+					self.hubDict[device.id] = hubClient
 				else:
-					self.errorLog(u"Unknown server device type: " + device.deviceTypeId)					
+					self.debugLog(u"%s: Error starting harmonyHub device (%s), disabling..." % (device.name, device.id))
+					indigo.device.enable(device, value=False)
 
 			else:
-				self.debugLog(device.name + u": Duplicate Device ID" )
-			
+				self.errorLog(u"Unknown server device type: " + device.deviceTypeId)					
 
-#	def deviceUpdated(self, origDev, newDev):
-#		self.debugLog(u'deviceUpdated(self, origDev, newDev): %s (%s) -> %s (%s)' % (origDev.name, origDev.id, newDev.name, newDev.id))
-#		self.debugLog(u'deviceUpdated, newDev is enabled: %r' % newDev.enabled)
-#		super(Plugin, self).deviceUpdated(origDev, newDev)
-		
-#		if newDev.enabled:
-#			hub = self.hubDict[newDev.id]
-#			hub.device = newDev
-#		else:
-#			hub = self.hubDict[newDev.id]
-#			hub.device = newDev
-#			super(Plugin, self).deviceUpdated(origDev, newDev)
+		else:
+			self.debugLog(device.name + u": Duplicate Device ID" )
+			
 		
 
 	########################################
@@ -382,10 +381,12 @@ class Plugin(indigo.PluginBase):
 	#
 	def deviceStopComm(self, device):
 		self.debugLog(u'Called deviceStopComm(self, device): %s (%s)' % (device.name, device.id))
-		hub = self.hubDict[device.id]
-		hub.client.disconnect(send_close=True)
-		self.hubDict.pop(device.id, None)
-		
+		try:
+			hub = self.hubDict[device.id]
+			hub.client.disconnect(send_close=True)
+			self.hubDict.pop(device.id, None)
+		except:
+			pass
  
 	########################################
 	def validateDeviceConfigUi(self, valuesDict, typeId, devId):
