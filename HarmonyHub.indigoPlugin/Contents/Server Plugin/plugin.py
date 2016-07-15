@@ -52,11 +52,9 @@ class HubClient(object):
 				self.plugin.debugLog(device.name + u': Could not get token from Logitech server.')
 
 			self.client = auth.SwapAuthToken(self.auth_token)
-#			self.plugin.debugLog(device.name + u': Calling self.client.connect()')
 			if not self.client.connect(address=(self.harmony_ip, self.harmony_port), reattempt=False, use_tls=False, use_ssl=False):
 				raise Exception("connect failure on SwapAuthToken")
 				
-#			self.plugin.debugLog(device.name + u': Calling self.client.process()')
 			self.client.process(block=False)
 			while not self.client.uuid:
 				self.plugin.debugLog(device.name + u": Waiting for client.uuid")
@@ -367,6 +365,8 @@ class Plugin(indigo.PluginBase):
 				else:
 					self.debugLog(u"%s: Error starting harmonyHub device (%s), disabling..." % (device.name, device.id))
 					indigo.device.enable(device, value=False)
+					indigo.device.updateStateOnServer(key="serverStatus", value="Disabled")
+					indigo.device.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
 			else:
 				self.errorLog(u"Unknown server device type: " + device.deviceTypeId)					
@@ -575,19 +575,19 @@ class Plugin(indigo.PluginBase):
 
 	def syncHub(self, valuesDict, typeId):
 		self.debugLog(u"Syncing Hub")
-		hubID = valuesDict['hubID']
+		hubID = int(valuesDict['hubID'])
 		client = self.hubDict[hubID].client
 		client.sync()
 		return (True, valuesDict)
 		
 	def dumpConfig(self, valuesDict, typeId):
-		hubID = valuesDict['hubID']
+		hubID = int(valuesDict['hubID'])
 		config = self.hubDict[hubID].config
 		self.debugLog(json.dumps(config, sort_keys=True, indent=4, separators=(',', ': ')))
 		return (True, valuesDict)
 		
 	def parseConfig(self, valuesDict, typeId):
-		hubID = valuesDict['hubID']
+		hubID = int(valuesDict['hubID'])
 		config = self.hubDict[hubID].config
 		for activity in config["activity"]:
 			if activity["id"] == "-1":		# skip Power Off
@@ -608,7 +608,7 @@ class Plugin(indigo.PluginBase):
 		return (True, valuesDict)
 		
 	def showActivity(self, valuesDict, typeId):
-		hubID = valuesDict['hubID']
+		hubID = int(valuesDict['hubID'])
 		client = self.hubDict[hubID].client
 		config = self.hubDict[hubID].config
 		current_activity_id = client.get_current_activity()
