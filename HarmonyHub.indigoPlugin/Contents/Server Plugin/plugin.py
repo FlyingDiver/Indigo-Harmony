@@ -607,15 +607,7 @@ class Plugin(indigo.PluginBase):
 
 		return (True, valuesDict)
 		
-	def showActivity(self, valuesDict, typeId):
-		hubID = int(valuesDict['hubID'])
-		client = self.hubDict[hubID].client
-		config = self.hubDict[hubID].config
-		current_activity_id = client.get_current_activity()
-		activity = [x for x in config['activity'] if x['id'] == current_activity_id][0]
-		self.debugLog(json.dumps(activity, sort_keys=True, indent=4, separators=(',', ': ')))
-		return (True, valuesDict)
-		
+				
 	def checkForUpdates(self):
 		self.updater.checkForUpdate()
 

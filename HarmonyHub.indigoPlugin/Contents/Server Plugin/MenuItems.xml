@@ -44,17 +44,6 @@
          	</Field>
 		</ConfigUI>
 	</MenuItem>
-	<MenuItem id="showActivity">
-		<Name>Write Current Activity to Log</Name>
-        <CallbackMethod>showActivity</CallbackMethod>
-      	<ButtonTitle>Select</ButtonTitle>
-      	<ConfigUI>
-        	<Field id="hubID" type="menu">
-            	<Label>Select Hub:</Label>
-            	<List class="self" filter="" method="pickHub" dynamicReload="true"/>
-         	</Field>
-		</ConfigUI>
-	</MenuItem>
 	<MenuItem id="titleSeparator2" type="separator" />
     <MenuItem id="checkForUpdates">
     	<Name>Check for Updates</Name>
