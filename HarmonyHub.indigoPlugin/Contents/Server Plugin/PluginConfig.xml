@@ -1,22 +1,21 @@
 <?xml version="1.0"?>
 <PluginConfig>
-	<SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
-	<Field id="updateFrequency" type="textfield" defaultValue="24">
-		<Label>Check for plugin update frequency (hours):</Label>
-	</Field>
-	<Field id="messageNote" type="label" fontSize="small" fontColor="darkgray">
-		<Label>The plugin will not check for updates if the frequency is set to zero.</Label>
-	</Field>
-	<Field id="sep1" type="separator"/>
-	<Field id="updaterEmail" type="textfield">
-		<Label>Email:</Label>
-	</Field>
-	<Field id="updaterEmailsEnabled" type="checkbox" defaultValue="true">
-		<Label>Email Update Notifications:</Label>
-	</Field>
-	<Field id="sep2" type="separator"/>
-	<Field id="showDebugInfo" type="checkbox">
-		<Label>Enable debugging:</Label>
-		<Description>(not recommended)</Description>
-	</Field>
+    <SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
+    <Field id="updateFrequency" type="textfield" defaultValue="24">
+        <Label>Check for plugin update frequency (hours):</Label>
+    </Field>
+    <Field id="messageNote" type="label" fontSize="small" fontColor="darkgray">
+        <Label>The plugin will not check for updates if the frequency is set to zero.</Label>
+    </Field>
+    <Field id="sep1" type="separator"/>
+    <Field id="logLevel" type="menu" defaultValue="20">
+        <Label>Event Logging Level:</Label>
+        <List>
+            <Option value="10">Debugging Messages</Option>
+            <Option value="20">Informational Messages</Option>
+            <Option value="30">Warning Messages</Option>
+            <Option value="40">Error Messages</Option>
+            <Option value="50">Critical Errors Only</Option>
+        </List>
+    </Field>            
 </PluginConfig>

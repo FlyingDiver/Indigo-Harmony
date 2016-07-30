@@ -1,66 +1,66 @@
 <?xml version="1.0"?>
 <Devices>
-	<Device type="custom" id="harmonyHub">
-		<Name>Harmony Hub</Name>
-		<ConfigUI>
-			<SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
-			<Field id="address" type="textfield">
-				<Label>Hub IP Address:</Label>
-			</Field>
-			<Field id="harmonyLogin" type="textfield">
-				<Label>Login:</Label>
-			</Field>
-			<Field id="harmonyPassword" type="textfield" secure="true">
-				<Label>Password:</Label>
-			</Field>
-		</ConfigUI>
-		<States>
-			<State id="currentActivityName">
-				<ValueType>String</ValueType>
-				<TriggerLabel>Current Activity</TriggerLabel>
-				<ControlPageLabel>Current Activity</ControlPageLabel>
-			</State>
-			<State id="currentActivityNum">
-				<ValueType>String</ValueType>
-				<TriggerLabel>Activity Number</TriggerLabel>
-				<ControlPageLabel>Activity Number</ControlPageLabel>
-			</State>
-			<State id="notifyActivityId">
-				<ValueType>String</ValueType>
-				<TriggerLabel>Notify Activity ID</TriggerLabel>
-				<ControlPageLabel>Notify Activity ID</ControlPageLabel>
-			</State>
-			<State id="notifyActivityStatus">
-				<ValueType>String</ValueType>
-				<TriggerLabel>Notify Activity Status</TriggerLabel>
-				<ControlPageLabel>Notify Activity Status</ControlPageLabel>
-			</State>
-			<State id="lastAutomationDevice">
-				<ValueType>String</ValueType>
-				<TriggerLabel>Last Automation Device</TriggerLabel>
-				<ControlPageLabel>Last Automation Device</ControlPageLabel>
-			</State>
-			<State id="lastAutomationStatus">
-				<ValueType>String</ValueType>
-				<TriggerLabel>Last Automation Status</TriggerLabel>
-				<ControlPageLabel>Last Automation Status</ControlPageLabel>
-			</State>
-			<State id="lastAutomationStatus">
-				<ValueType>String</ValueType>
-				<TriggerLabel>Last Automation Status</TriggerLabel>
-				<ControlPageLabel>Last Automation Status</ControlPageLabel>
-			</State>
-			<State id="lastAutomationOnState">
-				<ValueType>String</ValueType>
-				<TriggerLabel>Last Automation OnState</TriggerLabel>
-				<ControlPageLabel>Last Automation OnState</ControlPageLabel>
-			</State>
-			<State id="lastAutomationBrightness">
-				<ValueType>String</ValueType>
-				<TriggerLabel>Last Automation Brightness</TriggerLabel>
-				<ControlPageLabel>Last Automation Brightness</ControlPageLabel>
-			</State>
-		</States>
-		<UiDisplayStateId>currentActivityName</UiDisplayStateId>
-	</Device>
+    <Device type="custom" id="harmonyHub">
+        <Name>Harmony Hub</Name>
+        <ConfigUI>
+            <SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
+            <Field id="address" type="textfield">
+                <Label>Hub IP Address:</Label>
+            </Field>
+            <Field id="harmonyLogin" type="textfield">
+                <Label>Login:</Label>
+            </Field>
+            <Field id="harmonyPassword" type="textfield" secure="true">
+                <Label>Password:</Label>
+            </Field>
+        </ConfigUI>
+        <States>
+            <State id="currentActivityName">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Current Activity</TriggerLabel>
+                <ControlPageLabel>Current Activity</ControlPageLabel>
+            </State>
+            <State id="currentActivityNum">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Activity Number</TriggerLabel>
+                <ControlPageLabel>Activity Number</ControlPageLabel>
+            </State>
+            <State id="notifyActivityId">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Notify Activity ID</TriggerLabel>
+                <ControlPageLabel>Notify Activity ID</ControlPageLabel>
+            </State>
+            <State id="notifyActivityStatus">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Notify Activity Status</TriggerLabel>
+                <ControlPageLabel>Notify Activity Status</ControlPageLabel>
+            </State>
+            <State id="lastAutomationDevice">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Last Automation Device</TriggerLabel>
+                <ControlPageLabel>Last Automation Device</ControlPageLabel>
+            </State>
+            <State id="lastAutomationStatus">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Last Automation Status</TriggerLabel>
+                <ControlPageLabel>Last Automation Status</ControlPageLabel>
+            </State>
+            <State id="lastAutomationStatus">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Last Automation Status</TriggerLabel>
+                <ControlPageLabel>Last Automation Status</ControlPageLabel>
+            </State>
+            <State id="lastAutomationOnState">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Last Automation OnState</TriggerLabel>
+                <ControlPageLabel>Last Automation OnState</ControlPageLabel>
+            </State>
+            <State id="lastAutomationBrightness">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Last Automation Brightness</TriggerLabel>
+                <ControlPageLabel>Last Automation Brightness</ControlPageLabel>
+            </State>
+        </States>
+        <UiDisplayStateId>currentActivityName</UiDisplayStateId>
+    </Device>
 </Devices>

@@ -7,3 +7,33 @@ This plugin enables monitoring of certain activities on the Harmony Hub, and pro
 Communications with the hub uses the pyharmony library along with the sleekxmpp module.  The Python requests module is also required.  Pyharmony is included with the plugin.  Use pip to install sleekxmpp and requests.
 
 
+### Broadcast Messages
+
+    PluginID: com.flyingdiver.indigoplugin.harmonyhub
+
+    MessageType: activityNotification 
+    Returns dictionary:
+    {
+    	'notifyActivityId':			<text string>,
+		'notifyActivityStatus':		<text string>
+	}
+
+    MessageType: activityFinishedNotification
+    Returns dictionary:
+    {
+    	'currentActivityNum':  		<text string>,
+		'currentActivityName': 		<text string>
+	}
+
+    MessageType: automationNotification
+    Returns dictionary:
+    {
+    	'lastAutomationDevice':  		<text string>,
+		'lastAutomationStatus': 		<text string>,
+		'lastAutomationBrightness': 	<text string>,
+		'lastAutomationOnState': 		<text string>
+	}
+
+### Indigo 7 Only
+
+This plugin only works under Indigo 7 or greater.

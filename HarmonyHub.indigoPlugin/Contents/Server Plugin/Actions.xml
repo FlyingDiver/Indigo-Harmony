@@ -1,85 +1,85 @@
 <?xml version="1.0"?>
 <Actions>
-	<SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
-	<Action id="startActivity" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
-		<Name>Start Activity</Name>
+    <SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
+    <Action id="startActivity" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+        <Name>Start Activity</Name>
         <CallbackMethod>startActivity</CallbackMethod>
-		<ConfigUI>
-			<Field id="activity" type="menu">
-				<Label>Activity:</Label>
-				<List class="self" filter="" method="activityListGenerator"/>
-			</Field>
-		</ConfigUI>
-	</Action>
-	<Action id="sendActivityCommand" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
-		<Name>Send Activity Command</Name>
+        <ConfigUI>
+            <Field id="activity" type="menu">
+                <Label>Activity:</Label>
+                <List class="self" filter="" method="activityListGenerator"/>
+            </Field>
+        </ConfigUI>
+    </Action>
+    <Action id="sendActivityCommand" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+        <Name>Send Activity Command</Name>
         <CallbackMethod>sendActivityCommand</CallbackMethod>
-		<ConfigUI>
-			<Field id="activity" type="menu">
-				<Label>Activity:</Label>
-				<List class="self" filter="" method="activityListGenerator"/>
-		        <CallbackMethod>menuChanged</CallbackMethod>
-			</Field>
-			<Field id="group" type="menu">
-				<Label>Command Group:</Label>
-				<List class="self" filter="" method="commandGroupListGenerator" dynamicReload="true"/>
-		        <CallbackMethod>menuChanged</CallbackMethod>
-			</Field>
-			<Field id="command" type="menu">
-				<Label>Command:</Label>
-				<List class="self" filter="" method="commandListGenerator"  dynamicReload="true"/>
-			</Field>
-			<Field id="device" type="textfield" hidden="true">
-				<Label>Device ID:</Label>
-			</Field>
-		</ConfigUI>
-	</Action>
-	<Action id="sendDeviceCommand" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
-		<Name>Send Device Command</Name>
+        <ConfigUI>
+            <Field id="activity" type="menu">
+                <Label>Activity:</Label>
+                <List class="self" filter="" method="activityListGenerator"/>
+                <CallbackMethod>menuChanged</CallbackMethod>
+            </Field>
+            <Field id="group" type="menu">
+                <Label>Command Group:</Label>
+                <List class="self" filter="" method="commandGroupListGenerator" dynamicReload="true"/>
+                <CallbackMethod>menuChanged</CallbackMethod>
+            </Field>
+            <Field id="command" type="menu">
+                <Label>Command:</Label>
+                <List class="self" filter="" method="commandListGenerator"  dynamicReload="true"/>
+            </Field>
+            <Field id="device" type="textfield" hidden="true">
+                <Label>Device ID:</Label>
+            </Field>
+        </ConfigUI>
+    </Action>
+    <Action id="sendDeviceCommand" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+        <Name>Send Device Command</Name>
         <CallbackMethod>sendDeviceCommand</CallbackMethod>
-		<ConfigUI>
-			<Field id="device" type="menu">
-				<Label>Device:</Label>
-				<List class="self" filter="" method="deviceListGenerator"/>
-		        <CallbackMethod>menuChanged</CallbackMethod>
-			</Field>
-			<Field id="group" type="menu">
-				<Label>Command Group:</Label>
-				<List class="self" filter="" method="commandGroupListGenerator" dynamicReload="true"/>
-		        <CallbackMethod>menuChanged</CallbackMethod>
-			</Field>
-			<Field id="command" type="menu">
-				<Label>Command:</Label>
-				<List class="self" filter="" method="commandListGenerator"  dynamicReload="true"/>
-			</Field>
-		</ConfigUI>
-	</Action>
-	<Action id="sendCommand" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
-		<Name>Send Generic Command</Name>
+        <ConfigUI>
+            <Field id="device" type="menu">
+                <Label>Device:</Label>
+                <List class="self" filter="" method="deviceListGenerator"/>
+                <CallbackMethod>menuChanged</CallbackMethod>
+            </Field>
+            <Field id="group" type="menu">
+                <Label>Command Group:</Label>
+                <List class="self" filter="" method="commandGroupListGenerator" dynamicReload="true"/>
+                <CallbackMethod>menuChanged</CallbackMethod>
+            </Field>
+            <Field id="command" type="menu">
+                <Label>Command:</Label>
+                <List class="self" filter="" method="commandListGenerator"  dynamicReload="true"/>
+            </Field>
+        </ConfigUI>
+    </Action>
+    <Action id="sendCommand" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+        <Name>Send Generic Command</Name>
         <CallbackMethod>sendCommand</CallbackMethod>
-		<ConfigUI>
-			<Field id="device" type="textfield">
-				<Label>Device ID:</Label>
-			</Field>
-			<Field id="command" type="textfield">
-				<Label>Command:</Label>
-			</Field>
-		</ConfigUI>
-	</Action>
-	<Action id="powerOff" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
-		<Name>Power Off</Name>
+        <ConfigUI>
+            <Field id="device" type="textfield">
+                <Label>Device ID:</Label>
+            </Field>
+            <Field id="command" type="textfield">
+                <Label>Command:</Label>
+            </Field>
+        </ConfigUI>
+    </Action>
+    <Action id="powerOff" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+        <Name>Power Off</Name>
         <CallbackMethod>powerOff</CallbackMethod>
-	</Action>
-	<Action id="volumeMute" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
-		<Name>Mute Sound</Name>
+    </Action>
+    <Action id="volumeMute" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+        <Name>Mute Sound</Name>
         <CallbackMethod>volumeMute</CallbackMethod>
-	</Action>
-	<Action id="volumeDown" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
-		<Name>Volume Down</Name>
+    </Action>
+    <Action id="volumeDown" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+        <Name>Volume Down</Name>
         <CallbackMethod>volumeDown</CallbackMethod>
-	</Action>
-	<Action id="volumeUp" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
-		<Name>Volume Up</Name>
+    </Action>
+    <Action id="volumeUp" deviceFilter="self.harmonyHub" uiPath="DeviceActions">
+        <Name>Volume Up</Name>
         <CallbackMethod>volumeUp</CallbackMethod>
-	</Action>
+    </Action>
 </Actions>

@@ -1,32 +1,32 @@
 <?xml version="1.0"?>
 <Events>
-	<SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
-	<Event id="activityFinishedNotification">
+    <SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
+    <Event id="activityFinishedNotification">
         <Name>Activity Finished Notification</Name>
-      	<ConfigUI>
-        	<Field id="hubID" type="menu">
-            	<Label>Select Hub:</Label>
-            	<List class="self" filter="" method="pickHub" dynamicReload="true"/>
-			</Field>			
-      	</ConfigUI>
+        <ConfigUI>
+            <Field id="hubID" type="menu">
+                <Label>Select Hub:</Label>
+                <List class="self" filter="" method="pickHub" dynamicReload="true"/>
+            </Field>            
+        </ConfigUI>
     </Event>
-	<Event id="activityNotification">
+    <Event id="activityNotification">
         <Name>Activity Notification</Name>
-      	<ConfigUI>
-        	<Field id="hubID" type="menu">
-            	<Label>Select Hub:</Label>
-            	<List class="self" filter="" method="pickHub" dynamicReload="true"/>
-			</Field>			
-      	</ConfigUI>
+        <ConfigUI>
+            <Field id="hubID" type="menu">
+                <Label>Select Hub:</Label>
+                <List class="self" filter="" method="pickHub" dynamicReload="true"/>
+            </Field>            
+        </ConfigUI>
     </Event>
-	<Event id="automationNotification">
+    <Event id="automationNotification">
         <Name>Automation Notification</Name>
-      	<ConfigUI>
-        	<Field id="hubID" type="menu">
-            	<Label>Select Hub:</Label>
-            	<List class="self" filter="" method="pickHub" dynamicReload="true"/>
-			</Field>			
-      	</ConfigUI>
+        <ConfigUI>
+            <Field id="hubID" type="menu">
+                <Label>Select Hub:</Label>
+                <List class="self" filter="" method="pickHub" dynamicReload="true"/>
+            </Field>            
+        </ConfigUI>
     </Event>
 </Events>
 
