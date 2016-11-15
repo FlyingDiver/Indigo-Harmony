@@ -188,6 +188,7 @@ class HubClient(object):
                         self.logger.debug(hubDevice.name + u": messageHandler: Event startActivityFinished, activityId = %s, errorCode = %s, errorString = %s" % (activityId[1], errorCode[1], errorString[1]))
                         for activity in self.config["activity"]:
                             if activityId[1] == activity[u'id']:
+#                                hubDevice.current_activity_id = activity[u'id']
                                 stateList = [   {'key':'currentActivityNum', 'value':activity[u'id']},
                                                 {'key':'currentActivityName', 'value':activity[u'label']}
                                             ]
@@ -271,7 +272,6 @@ class Plugin(indigo.PluginBase):
         self.logger.info(u"Starting Harmony Hub")
 
         self.updater = GitHubPluginUpdater(self)
-        self.updater.checkForUpdate()
         self.updateFrequency = float(self.pluginPrefs.get('updateFrequency', 24)) * 60.0 * 60.0
         self.logger.debug(u"updateFrequency = " + str(self.updateFrequency))
         self.next_update_check = time.time()
@@ -362,7 +362,6 @@ class Plugin(indigo.PluginBase):
 
     ########################################
     # Called for each enabled Device belonging to plugin
-    # Verify connectivity to servers and start polling IMAP/POP servers here
     #
     def deviceStartComm(self, device):
         self.logger.debug(u'Called deviceStartComm(self, device): %s (%s)' % (device.name, device.id))
@@ -530,7 +529,7 @@ class Plugin(indigo.PluginBase):
     def sendActivityCommand(self, pluginAction):
         hubDevice = indigo.devices[pluginAction.deviceId]
         if not hubDevice.enabled:
-            self.logger.debug(hubDevice.name + u": Can't send Volume commands when hub is not enabled")
+            self.logger.debug(hubDevice.name + u": Can't send Activity commands when hub is not enabled")
             return
         hub = self.hubDict[hubDevice.id]
         if (int(hub.current_activity_id) <= 0):
