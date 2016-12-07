@@ -385,7 +385,7 @@ class Plugin(indigo.PluginBase):
                 if (hubClient.ready):
                     self.hubDict[device.id] = hubClient
                 else:
-                    self.logger.debug(u"%s: Error starting harmonyHub device (%s), disabling..." % (device.name, device.id))
+                    self.logger.error(u"%s: Error starting harmonyHub device (%s), disabling..." % (device.name, device.id))
                     indigo.device.enable(device, value=False)
                     indigo.device.updateStateOnServer(key="serverStatus", value="Disabled")
                     indigo.device.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
@@ -437,31 +437,39 @@ class Plugin(indigo.PluginBase):
         activityID = pluginAction.props["activity"]
         activityLabel = hub.activityList[activityID]["label"]
         self.logger.debug(hubDevice.name + u": Start Activity - " + activityLabel)
-        try:
-            hub.client.start_activity(int(activityID))
-        except sleekxmpp.exceptions.IqTimeout:
-            self.logger.debug(hubDevice.name + u": Time out in hub.client.startActivity")
-        except sleekxmpp.exceptions.IqError:
-            self.logger.debug(hubDevice.name + u": IqError in hub.client.startActivity")
-        except Exception as e:
-            self.logger.debug(hubDevice.name + u": Error in hub.client.startActivity: " + str(e))
-        else:
-            hub.current_activity_id = activityID
+
+        retries = 0
+        while retries < 3:
+            try:
+                hub.client.start_activity(int(activityID))
+            except sleekxmpp.exceptions.IqTimeout:
+                self.logger.debug(hubDevice.name + u": Time out in hub.client.startActivity")
+                retries += 1
+            except sleekxmpp.exceptions.IqError:
+                self.logger.debug(hubDevice.name + u": IqError in hub.client.startActivity")
+                return
+            else:
+                hub.current_activity_id = activityID
+                return
 
     def powerOff(self, pluginAction):
         hubDevice = indigo.devices[pluginAction.deviceId]
         hub = self.hubDict[hubDevice.id]
         self.logger.debug(hubDevice.name + u": Power Off")
-        try:
-            hub.client.start_activity(-1)
-        except sleekxmpp.exceptions.IqTimeout:
-            self.logger.debug(hubDevice.name + u": Time out in hub.client.startActivity")
-        except sleekxmpp.exceptions.IqError:
-            self.logger.debug(hubDevice.name + u": IqError in hub.client.startActivity")
-        except Exception as e:
-            self.logger.debug(hubDevice.name + u": Error in hub.client.startActivity: " + str(e))
-        else:
-            hub.current_activity_id = "-1"
+
+        retries = 0
+        while retries < 3:
+            try:
+                hub.client.start_activity(-1)
+            except sleekxmpp.exceptions.IqTimeout:
+                self.logger.debug(hubDevice.name + u": Time out in hub.client.startActivity")
+                retries += 1
+            except sleekxmpp.exceptions.IqError:
+                self.logger.debug(hubDevice.name + u": IqError in hub.client.startActivity")
+                return
+            else:
+                hub.current_activity_id = "-1"
+                return
 
     def volumeMute(self, pluginAction):
         hubDevice = indigo.devices[pluginAction.deviceId]

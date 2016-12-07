@@ -3,7 +3,7 @@
     <Device type="custom" id="harmonyHub">
         <Name>Harmony Hub</Name>
         <ConfigUI>
-            <SupportURL>http://forums.indigodomo.com/viewforum.php?f=177</SupportURL>
+            <SupportURL>http://forums.indigodomo.com/viewforum.php?f=211</SupportURL>
             <Field id="address" type="textfield">
                 <Label>Hub IP Address:</Label>
             </Field>
