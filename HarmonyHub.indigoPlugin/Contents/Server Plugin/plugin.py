@@ -276,30 +276,6 @@ class Plugin(indigo.PluginBase):
         except Exception as e:
             self.logger.debug(hubDevice.name + u": Error in hub.client.send_command: " + str(e))
 
-    def sendActivityCommand(self, pluginAction):
-        hubDevice = indigo.devices[pluginAction.deviceId]
-        if not hubDevice.enabled:
-            self.logger.debug(hubDevice.name + u": Can't send Activity commands when hub is not enabled")
-            return
-        hubClient = self.hubDict[hubDevice.id]
-        if (int(hubClient.current_activity_id) <= 0):
-            self.logger.debug(hubDevice.name + u": Can't send Activity commands when no Activity is running")
-            return
-
-        activityID = pluginAction.props["activity"]
-        command = pluginAction.props["command"]
-
-        device = self.findDeviceForCommand(hubClient.config, command, activityID)
-
-        self.logger.debug(hubDevice.name + u": sendActivityCommand: " + command + " to Device " + device + " for Activity " + activityID)
-        try:
-            hubClient.client.send_command(device, command)
-        except sleekxmpp.exceptions.IqTimeout:
-            self.logger.debug(hubDevice.name + u": Time out in hub.client.send_command")
-        except sleekxmpp.exceptions.IqError:
-            self.logger.debug(hubDevice.name + u": IqError in hub.client.send_command")
-        except Exception as e:
-            self.logger.debug(hubDevice.name + u": Error in hub.client.send_command: " + str(e))
 
     def sendCommand(self, pluginAction):
         hubDevice = indigo.devices[pluginAction.deviceId]
@@ -398,15 +374,6 @@ class Plugin(indigo.PluginBase):
                     tempList.append((group["name"], group["name"]))
             retList = list(set(tempList))                       # get rid of the dupes
 
-        elif typeId == "sendActivityCommand":
-            if not valuesDict:
-                return retList
-            for activity in config["activity"]:
-                if activity["id"] != valuesDict['activity']:
-                    continue
-                for group in activity["controlGroup"]:
-                    retList.append((group['name'], group["name"]))
-
         elif typeId == "sendDeviceCommand":
             if not valuesDict:
                 return retList
@@ -440,16 +407,6 @@ class Plugin(indigo.PluginBase):
                     for function in group["function"]:          # for all activities (combined)
                         tempList.append((function['name'], function['label']))
             retList = list(set(tempList))                       # get rid of the dupes
-
-        elif typeId == "sendActivityCommand":
-            for activity in config["activity"]:
-                if activity["id"] != valuesDict['activity']:
-                    continue
-                for group in activity["controlGroup"]:
-                    if group["name"] != valuesDict['group']:
-                        continue
-                    for function in group['function']:
-                        retList.append((function['name'], function["label"]))
 
         elif typeId == "sendDeviceCommand":
             for device in config["device"]:
@@ -488,16 +445,6 @@ class Plugin(indigo.PluginBase):
             if valuesDict['command'] == "":
                 errorDict["command"] = "Command must be selected"
 
-        elif typeId == "sendActivityCommand":
-            self.logger.debug(u"validateActionConfigUi sendActivityCommand")
-
-            if valuesDict['activity'] == "":
-                errorDict["activity"] = "Activity must be selected"
-            if valuesDict['group'] == "":
-                errorDict["group"] = "Command Group must be selected"
-            if valuesDict['command'] == "":
-                errorDict["command"] = "Command must be selected"
-
         elif typeId == "sendDeviceCommand":
             self.logger.debug(u"validateActionConfigUi sendDeviceCommand")
             if valuesDict['device'] == "":
@@ -506,13 +453,6 @@ class Plugin(indigo.PluginBase):
                 errorDict["group"] = "Command Group must be selected"
             if valuesDict['command'] == "":
                 errorDict["command"] = "Command must be selected"
-
-        elif typeId == "sendCommand":
-            self.logger.debug(u"validateActionConfigUi sendCommand")
-            if valuesDict['device'] == "":
-                errorDict["device"] = "Device must be entered"
-            if valuesDict['command'] == "":
-                errorDict["command"] = "Command must be entered"
 
         else:
             self.logger.debug(u"validateActionConfigUi Error: Unknown typeId (%s)" % typeId)
