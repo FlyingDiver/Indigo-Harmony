@@ -374,7 +374,11 @@ class Plugin(indigo.PluginBase):
 
         elif instanceVers < kCurDevVersCount:
             newProps = device.pluginProps
+            newProps["devVersCount"] = kCurDevVersCount
 
+            device.replacePluginPropsOnServer(newProps)
+            device.stateListOrDisplayStateIdChanged()
+            self.logger.debug(u"deviceStartComm: Updated " + device.name + " to version " + str(kCurDevVersCount))
         else:
             self.logger.error(u"Unknown device version: " + str(instanceVers) + " for device " + device.name)
 
@@ -395,7 +399,6 @@ class Plugin(indigo.PluginBase):
 
         else:
             self.logger.debug(device.name + u": Duplicate Device ID" )
-
 
 
     ########################################
