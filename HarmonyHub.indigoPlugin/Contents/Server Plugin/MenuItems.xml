@@ -6,18 +6,6 @@
      back to the user you can post information into the Event Log.
 -->
 <MenuItems>
-    <MenuItem id="syncHub">
-        <Name>Sync Hub</Name>
-        <CallbackMethod>syncHub</CallbackMethod>
-        <ButtonTitle>Select</ButtonTitle>
-        <ConfigUI>
-            <Field id="hubID" type="menu">
-                <Label>Select Hub:</Label>
-                <List class="self" filter="" method="pickHub" dynamicReload="true"/>
-            </Field>
-        </ConfigUI>
-    </MenuItem>
-    <MenuItem id="titleSeparator1" type="separator" />
     <MenuItem id="parseConfig">
         <Name>Write Formatted Hub Config to Log</Name>
         <CallbackMethod>parseConfig</CallbackMethod>
