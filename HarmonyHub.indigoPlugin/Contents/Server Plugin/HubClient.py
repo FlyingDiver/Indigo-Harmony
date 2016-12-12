@@ -7,8 +7,8 @@ from sleekxmpp.xmlstream import ET
 from sleekxmpp.xmlstream.matcher.base import MatcherBase
 from sleekxmpp.xmlstream.handler import Callback
 
-from harmony import auth
-from harmony import client as harmony_client
+from pyharmony import auth as harmony_auth
+from pyharmony import client as harmony_client
 
 import indigo
 
@@ -44,33 +44,20 @@ class HubClient(object):
         self.ready = False
 
         try:
-            self.auth_token = auth.login(device.pluginProps['harmonyLogin'], device.pluginProps['harmonyPassword'])
+            self.auth_token = harmony_auth.get_auth_token(self.harmony_ip, self.harmony_port)
             if not self.auth_token:
-                self.logger.warning(device.name + u': Could not get token from Logitech server.')
+                self.logger.warning(device.name + u': harmony_auth.get_auth_token failure')
 
-            self.client = auth.SwapAuthToken(self.auth_token)
-            if not self.client.connect(address=(self.harmony_ip, self.harmony_port), reattempt=False, use_tls=False, use_ssl=False):
-                raise Exception("connect failure on SwapAuthToken")
-
-            self.client.process(block=False)
-            while not self.client.uuid:
-                self.logger.debug(device.name + u": Waiting for client.uuid")
-                time.sleep(0.5)
-            self.session_token = self.client.uuid
-
-            if not self.session_token:
-                self.logger.debug(device.name + u': Could not swap login token for session token.')
-
-            self.client = harmony_client.HarmonyClient(self.session_token)
+            self.client = harmony_client.HarmonyClient(self.auth_token)
             self.client.registerHandler(Callback('Hub Message Handler', MatchMessage(''), self.messageHandler))
 
-            if not self.client.connect(address=(self.harmony_ip, self.harmony_port), reattempt=False, use_tls=False, use_ssl=False):
+            if not self.client.connect(address=(self.harmony_ip, self.harmony_port), use_tls=False, use_ssl=False):
                 raise Exception("connect failure on HarmonyClient")
 
             self.client.process(block=False)
             while not self.client.sessionstarted:
                 self.logger.debug(device.name + u": Waiting for client.sessionstarted")
-                time.sleep(0.5)
+                time.sleep(0.1)
 
             self.refreshConfig(device)
             self.ready = True
