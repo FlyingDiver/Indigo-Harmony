@@ -7,12 +7,6 @@
             <Field id="address" type="textfield">
                 <Label>Hub IP Address:</Label>
             </Field>
-            <Field id="harmonyLogin" type="textfield">
-                <Label>Login:</Label>
-            </Field>
-            <Field id="harmonyPassword" type="textfield" secure="true">
-                <Label>Password:</Label>
-            </Field>
         </ConfigUI>
         <States>
             <State id="currentActivityName">
