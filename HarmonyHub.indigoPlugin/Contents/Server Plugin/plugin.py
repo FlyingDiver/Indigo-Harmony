@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 ####################
 
-# import sys
 import time
 import json
 import logging
@@ -251,6 +250,8 @@ class Plugin(indigo.PluginBase):
                             action = json.loads(function["action"])
                             device = action["deviceId"]
                             return device
+        return None
+
 
     def sendCurrentActivityCommand(self, pluginAction):
         hubDevice = indigo.devices[pluginAction.deviceId]
@@ -265,6 +266,10 @@ class Plugin(indigo.PluginBase):
         command = pluginAction.props["command"]
 
         device = self.findDeviceForCommand(hubClient.config, command, hubClient.current_activity_id)
+
+        if device == None:
+            self.logger.warning(hubDevice.name + u": sendCurrentActivityCommand: No command '" + command + "' in current activity")
+            return
 
         self.logger.debug(hubDevice.name + u": sendCurrentActivityCommand: " + command + " to " + device)
         try:

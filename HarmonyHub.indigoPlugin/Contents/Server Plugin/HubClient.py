@@ -155,7 +155,6 @@ class HubClient(object):
                         self.logger.debug(hubDevice.name + u": messageHandler: Event startActivityFinished, activityId = %s, errorCode = %s, errorString = %s" % (activityId[1], errorCode[1], errorString[1]))
                         for activity in self.config["activity"]:
                             if activityId[1] == activity[u'id']:
-#                                hubDevice.current_activity_id = activity[u'id']
                                 stateList = [   {'key':'currentActivityNum', 'value':activity[u'id']},
                                                 {'key':'currentActivityName', 'value':activity[u'label']}
                                             ]
