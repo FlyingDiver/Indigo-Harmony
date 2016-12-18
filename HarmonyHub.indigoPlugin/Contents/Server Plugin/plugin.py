@@ -410,7 +410,8 @@ class Plugin(indigo.PluginBase):
                     if group["name"] != valuesDict['group']:
                         continue                                # build a list of all functions found in the specified controlGroup,
                     for function in group["function"]:          # for all activities (combined)
-                        tempList.append((function['name'], function['label']))
+                        action = json.loads(function["action"])
+                        tempList.append((action["command"], function['label']))
             retList = list(set(tempList))                       # get rid of the dupes
 
         elif typeId == "sendDeviceCommand":
