@@ -240,16 +240,29 @@ class Plugin(indigo.PluginBase):
                 hubClient.current_activity_id = "-1"
                 return
 
-    def findDeviceForCommand(self, configData, command, activityID):
+    def findDeviceForCommand(self, configData, commandName, activityID):
 
         for activity in configData["activity"]:
             if activity["id"] == activityID:
                 for group in activity["controlGroup"]:
                     for function in group['function']:
-                        if function['name'] == command:
+                        if function['name'] == commandName:
                             action = json.loads(function["action"])
                             device = action["deviceId"]
-                            return device
+                            devCommand = action["command"]
+                            return (device, devCommand)
+        return None
+
+    def findCommandForDevice(self, configData, commandName, deviceID):
+
+        for device in configData["device"]:
+            if device["id"] == deviceID:
+                for group in device["controlGroup"]:
+                    for function in group['function']:
+                        if function['name'] == commandName:
+                            action = json.loads(function["action"])
+                            devCommand = action["command"]
+                            return devCommand
         return None
 
 
@@ -263,17 +276,17 @@ class Plugin(indigo.PluginBase):
             self.logger.debug(hubDevice.name + u": Can't send Activity commands when no Activity is running")
             return
 
-        command = pluginAction.props["command"]
+        commandName = pluginAction.props["command"]
 
-        device = self.findDeviceForCommand(hubClient.config, command, hubClient.current_activity_id)
+        (device, devCommand) = self.findDeviceForCommand(hubClient.config, commandName, hubClient.current_activity_id)
 
         if device == None:
-            self.logger.warning(hubDevice.name + u": sendCurrentActivityCommand: No command '" + command + "' in current activity")
+            self.logger.warning(hubDevice.name + u": sendCurrentActivityCommand: No command '" + commandName + "' in current activity")
             return
 
-        self.logger.debug(hubDevice.name + u": sendCurrentActivityCommand: " + command + " to " + device)
+        self.logger.debug(u"%s: sendCurrentActivityCommand: %s (%s) to %s" % (hubDevice.name, commandName, devCommand, device))
         try:
-            hubClient.client.send_command(device, command)
+            hubClient.client.send_command(device, devCommand)
         except sleekxmpp.exceptions.IqTimeout:
             self.logger.debug(hubDevice.name + u": Time out in hub.client.send_command")
         except sleekxmpp.exceptions.IqError:
@@ -282,17 +295,20 @@ class Plugin(indigo.PluginBase):
             self.logger.debug(hubDevice.name + u": Error in hub.client.send_command: " + str(e))
 
 
-    def sendCommand(self, pluginAction):
+    def sendDeviceCommand(self, pluginAction):
         hubDevice = indigo.devices[pluginAction.deviceId]
         if not hubDevice.enabled:
             self.logger.debug(hubDevice.name + u": Can't send commands when hub is not enabled")
             return
         hubClient = self.hubDict[hubDevice.id]
-        command = pluginAction.props["command"]
+
+        commandName = pluginAction.props["command"]
         device = pluginAction.props["device"]
-        self.logger.debug(hubDevice.name + u": sendCommand: " + command + " to Device " + device)
+        devCommand = self.findCommandForDevice(hubClient.config, commandName, device)
+
+        self.logger.debug(u"%s: sendDeviceCommand: %s (%s) to %s" % (hubDevice.name, commandName, devCommand, device))
         try:
-            hubClient.client.send_command(device, command)
+            hubClient.client.send_command(device, devCommand)
         except sleekxmpp.exceptions.IqTimeout:
             self.logger.debug(hubDevice.name + u": Time out in hub.client.send_command")
         except sleekxmpp.exceptions.IqError:
@@ -367,7 +383,7 @@ class Plugin(indigo.PluginBase):
         return retList
 
     def commandGroupListGenerator(self, filter, valuesDict, typeId, targetId):
-        self.logger.debug(u"commandGroupListGenerator: typeId = %s, targetId = %s, valuesdict = %s" % (typeId, targetId, valuesDict))
+        self.logger.debug(u"commandGroupListGenerator: typeId = %s, targetId = %s" % (typeId, targetId))
         retList = []
 
         config = self.hubDict[targetId].config
@@ -396,7 +412,6 @@ class Plugin(indigo.PluginBase):
         return retList
 
     def commandListGenerator(self, filter, valuesDict, typeId, targetId):
-        self.logger.debug(u"commandListGenerator: typeId = %s, targetId = %s, valuesdict = %s" % (typeId, targetId, valuesDict))
         retList = []
         if not valuesDict:
             return retList
@@ -404,17 +419,20 @@ class Plugin(indigo.PluginBase):
         config = self.hubDict[targetId].config
 
         if typeId == "sendCurrentActivityCommand":
+            self.logger.debug(u"commandListGenerator: typeId = %s, targetId = %s, group = %s" % (typeId, targetId, valuesDict["group"]))
             tempList = []
             for activity in config["activity"]:
                 for group in activity["controlGroup"]:
                     if group["name"] != valuesDict['group']:
                         continue                                # build a list of all functions found in the specified controlGroup,
                     for function in group["function"]:          # for all activities (combined)
-                        action = json.loads(function["action"])
-                        tempList.append((action["command"], function['label']))
+                        self.logger.debug(u"commandListGenerator: Adding name = '%s', label = '%s'" % (function["name"], function['label']))
+                        tempList.append((function["name"], function['name']))
+#                        tempList.append((function["name"], function['label'] + ' - ' + function["name"]))
             retList = list(set(tempList))                       # get rid of the dupes
 
         elif typeId == "sendDeviceCommand":
+            self.logger.debug(u"commandListGenerator: typeId = %s, targetId = %s, device = %s" % (typeId, targetId, valuesDict["device"]))
             for device in config["device"]:
                 if device["id"] != valuesDict['device']:
                     continue
@@ -422,6 +440,7 @@ class Plugin(indigo.PluginBase):
                     if group["name"] != valuesDict['group']:
                         continue
                     for function in group['function']:
+                        self.logger.debug(u"commandListGenerator: Adding name = '%s', label = '%s'" % (function["name"], function['label']))
                         retList.append((function['name'], function["label"]))
 
         else:
@@ -444,7 +463,7 @@ class Plugin(indigo.PluginBase):
             self.logger.debug(u"validateActionConfigUi startActivity")
 
         elif typeId == "sendCurrentActivityCommand":
-            self.logger.debug(u"validateActionConfigUi sendCurrentActivityCommand")
+            self.logger.debug(u"validateActionConfigUi sendCurrentActivityCommand, group = %s, command = %s" % (valuesDict['group'], valuesDict['command']))
 
             if valuesDict['group'] == "":
                 errorDict["group"] = "Command Group must be selected"
@@ -452,7 +471,7 @@ class Plugin(indigo.PluginBase):
                 errorDict["command"] = "Command must be selected"
 
         elif typeId == "sendDeviceCommand":
-            self.logger.debug(u"validateActionConfigUi sendDeviceCommand")
+            self.logger.debug(u"validateActionConfigUi sendDeviceCommand, device = %s, group = %s, command = %s" % (valuesDict['device'], valuesDict['group'], valuesDict['command']))
             if valuesDict['device'] == "":
                 errorDict["device"] = "Device must be selected"
             if valuesDict['group'] == "":

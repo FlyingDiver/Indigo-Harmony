@@ -36,7 +36,7 @@
         
     <Action id="sendDeviceCommand" deviceFilter="self.harmonyHub">
         <Name>Send Device Command</Name>
-        <CallbackMethod>sendCommand</CallbackMethod>
+        <CallbackMethod>sendDeviceCommand</CallbackMethod>
         <ConfigUI>
             <Field id="device" type="menu">
                 <Label>Device:</Label>
