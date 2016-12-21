@@ -6,9 +6,9 @@
      back to the user you can post information into the Event Log.
 -->
 <MenuItems>
-    <MenuItem id="parseConfig">
+    <MenuItem id="dumpFormattedConfig">
         <Name>Write Formatted Hub Config to Log</Name>
-        <CallbackMethod>parseConfig</CallbackMethod>
+        <CallbackMethod>dumpFormattedConfig</CallbackMethod>
         <ButtonTitle>Select</ButtonTitle>
         <ConfigUI>
             <Field id="hubID" type="menu">

@@ -345,24 +345,26 @@ class Plugin(indigo.PluginBase):
         self.logger.info("\n"+json.dumps(config, sort_keys=True, indent=4, separators=(',', ': ')))
         return (True, valuesDict)
 
-    def parseConfig(self, valuesDict, typeId):
+    def dumpFormattedConfig(self, valuesDict, typeId):
         hubID = int(valuesDict['hubID'])
         config = self.hubDict[hubID].config
         for activity in config["activity"]:
             if activity["id"] == "-1":      # skip Power Off
                 continue
+            self.logger.info(u"")
             self.logger.info(u"Activity: %s, id: %s, order: %i, type: %s, isAVActivity: %s, isTuningDefault: %s" % (activity['label'], activity['id'], activity['activityOrder'], activity['type'], str(activity['isAVActivity']), str(activity['isTuningDefault'])))
             for group in activity["controlGroup"]:
-                self.logger.info(u"\tControl Group %s:" % group['name'])
+                self.logger.info(u"    Control Group %s:" % group['name'])
                 for function in group['function']:
-                    self.logger.info(u"\t\tFunction %s, label: %s, action %s:" % (function['name'], function['label'], function['action']))
+                    self.logger.info(u"        Function %s: label = '%s', action: %s" % (function['name'], function['label'], function['action']))
 
         for device in config["device"]:
+            self.logger.info(u"")
             self.logger.info(u"Device: %s, id: %s, type: %s, Manufacturer: %s, Model: %s" % (device['label'], device['id'], device['type'], device['manufacturer'], device['model']))
             for group in device["controlGroup"]:
-                self.logger.info(u"\tControl Group %s:" % group['name'])
+                self.logger.info(u"    Control Group %s:" % group['name'])
                 for function in group['function']:
-                    self.logger.info(u"\t\tFunction %s, label: %s, action %s:" % (function['name'], function['label'], function['action']))
+                    self.logger.info(u"        Function %s: label = '%s', action: %s" % (function['name'], function['label'], function['action']))
 
         return (True, valuesDict)
 
