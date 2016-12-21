@@ -241,28 +241,44 @@ class Plugin(indigo.PluginBase):
                 return
 
     def findDeviceForCommand(self, configData, commandName, activityID):
+        self.logger.debug(u'findDeviceForCommand: looking for %s in %s' % (commandName, activityID))
 
         for activity in configData["activity"]:
             if activity["id"] == activityID:
+                self.logger.debug(u'findDeviceForCommand:     looking in %s' % (activity["label"]))
                 for group in activity["controlGroup"]:
+                    self.logger.debug(u'findDeviceForCommand:         looking in %s' % (group["name"]))
                     for function in group['function']:
                         if function['name'] == commandName:
                             action = json.loads(function["action"])
                             device = action["deviceId"]
                             devCommand = action["command"]
+                            self.logger.debug(u'findDeviceForCommand:             function %s, device = %s, devCommand = %s' % (function["name"], device, devCommand))
                             return (device, devCommand)
-        return None
+            else:
+                self.logger.debug(u'findDeviceForCommand:     skipping %s' % (activity["label"]))
+
+        self.logger.debug(u'findDeviceForCommand: command not found')
+        return (None, None)
 
     def findCommandForDevice(self, configData, commandName, deviceID):
+        self.logger.debug(u'findCommandForDevice: looking for %s in %s' % (commandName, deviceID))
 
         for device in configData["device"]:
             if device["id"] == deviceID:
+                self.logger.debug(u'findCommandForDevice:     looking in %s' % (device["label"]))
                 for group in device["controlGroup"]:
+                    self.logger.debug(u'findCommandForDevice:         looking in %s' % (group["name"]))
                     for function in group['function']:
                         if function['name'] == commandName:
                             action = json.loads(function["action"])
                             devCommand = action["command"]
+                            self.logger.debug(u'findCommandForDevice:             function %s, devCommand = %s' % (function["name"], devCommand))
                             return devCommand
+            else:
+                self.logger.debug(u'findDeviceForCommand:     skipping %s' % (activity["label"]))
+
+        self.logger.debug(u'findCommandForDevice: command not found')
         return None
 
 
@@ -277,6 +293,9 @@ class Plugin(indigo.PluginBase):
             return
 
         commandName = pluginAction.props["command"]
+        if commandName == None:
+            self.logger.error(hubDevice.name + u": sendCurrentActivityCommand: command property invalid in pluginProps")
+            return
 
         (device, devCommand) = self.findDeviceForCommand(hubClient.config, commandName, hubClient.current_activity_id)
 
