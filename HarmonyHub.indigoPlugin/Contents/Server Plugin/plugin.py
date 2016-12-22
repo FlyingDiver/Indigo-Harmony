@@ -245,15 +245,15 @@ class Plugin(indigo.PluginBase):
 
         for activity in configData["activity"]:
             if activity["id"] == activityID:
-                self.logger.debug(u'findDeviceForCommand:     looking in %s' % (activity["label"]))
+                self.logger.debug(u'findDeviceForCommand:   looking in %s' % (activity["label"]))
                 for group in activity["controlGroup"]:
-                    self.logger.debug(u'findDeviceForCommand:         looking in %s' % (group["name"]))
+                    self.logger.debug(u'findDeviceForCommand:     looking in %s' % (group["name"]))
                     for function in group['function']:
                         if function['name'] == commandName:
                             action = json.loads(function["action"])
                             device = action["deviceId"]
                             devCommand = action["command"]
-                            self.logger.debug(u'findDeviceForCommand:             function %s, device = %s, devCommand = %s' % (function["name"], device, devCommand))
+                            self.logger.debug(u'findDeviceForCommand:       function %s, device = %s, devCommand = %s' % (function["name"], device, devCommand))
                             return (device, devCommand)
             else:
                 self.logger.debug(u'findDeviceForCommand:     skipping %s' % (activity["label"]))
@@ -266,17 +266,17 @@ class Plugin(indigo.PluginBase):
 
         for device in configData["device"]:
             if device["id"] == deviceID:
-                self.logger.debug(u'findCommandForDevice:     looking in %s' % (device["label"]))
+                self.logger.debug(u'findCommandForDevice:   looking in %s' % (device["label"]))
                 for group in device["controlGroup"]:
-                    self.logger.debug(u'findCommandForDevice:         looking in %s' % (group["name"]))
+                    self.logger.debug(u'findCommandForDevice:     looking in %s' % (group["name"]))
                     for function in group['function']:
                         if function['name'] == commandName:
                             action = json.loads(function["action"])
                             devCommand = action["command"]
-                            self.logger.debug(u'findCommandForDevice:             function %s, devCommand = %s' % (function["name"], devCommand))
+                            self.logger.debug(u'findCommandForDevice:       function %s, devCommand = %s' % (function["name"], devCommand))
                             return devCommand
             else:
-                self.logger.debug(u'findDeviceForCommand:     skipping %s' % (activity["label"]))
+                self.logger.debug(u'findDeviceForCommand:     skipping %s' % (device["label"]))
 
         self.logger.debug(u'findCommandForDevice: command not found')
         return None
