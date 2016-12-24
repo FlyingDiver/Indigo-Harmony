@@ -314,6 +314,31 @@ class Plugin(indigo.PluginBase):
             self.logger.debug(hubDevice.name + u": Error in hub.client.send_command: " + str(e))
 
 
+    def sendActivityCommand(self, pluginAction):
+        hubDevice = indigo.devices[pluginAction.deviceId]
+        if not hubDevice.enabled:
+            self.logger.debug(hubDevice.name + u": Can't send Activity commands when hub is not enabled")
+            return
+        hub = self.hubDict[hubDevice.id]
+        if (int(hub.current_activity_id) <= 0):
+            self.logger.debug(hubDevice.name + u": Can't send Activity commands when no Activity is running")
+            return
+
+        commandName = pluginAction.props["command"]
+        activity = pluginAction.props["activity"]
+        device = pluginAction.props["device"]
+        devCommand = self.findCommandForDevice(hubClient.config, commandName, device)
+
+        self.logger.debug(u"%s: sendActivityCommand: %s (%s) to %s for %s" % (hubDevice.name, commandName, devCommand, device, activity))
+        try:
+            hub.client.send_command(device, devCommand)
+        except sleekxmpp.exceptions.IqTimeout:
+            self.logger.debug(hubDevice.name + u": Time out in hub.client.send_command")
+        except sleekxmpp.exceptions.IqError:
+            self.logger.debug(hubDevice.name + u": IqError in hub.client.send_command")
+        except Exception as e:
+            self.logger.debug(hubDevice.name + u": Error in hub.client.send_command: " + str(e))
+
     def sendDeviceCommand(self, pluginAction):
         hubDevice = indigo.devices[pluginAction.deviceId]
         if not hubDevice.enabled:
@@ -449,7 +474,6 @@ class Plugin(indigo.PluginBase):
                     for function in group["function"]:          # for all activities (combined)
                         self.logger.debug(u"commandListGenerator: Adding name = '%s', label = '%s'" % (function["name"], function['label']))
                         tempList.append((function["name"], function['name']))
-#                        tempList.append((function["name"], function['label'] + ' - ' + function["name"]))
             retList = list(set(tempList))                       # get rid of the dupes
 
         elif typeId == "sendDeviceCommand":

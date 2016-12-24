@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <Events>
     <SupportURL>http://forums.indigodomo.com/viewforum.php?f=211</SupportURL>
+    
     <Event id="activityFinishedNotification">
         <Name>Activity Finished Notification</Name>
         <ConfigUI>
@@ -10,6 +11,7 @@
             </Field>            
         </ConfigUI>
     </Event>
+    
     <Event id="activityNotification">
         <Name>Activity Notification</Name>
         <ConfigUI>
@@ -19,6 +21,7 @@
             </Field>            
         </ConfigUI>
     </Event>
+    
     <Event id="automationNotification">
         <Name>Automation Notification</Name>
         <ConfigUI>
