@@ -1,6 +1,7 @@
 import logging
 import time
 import json
+import socket
 
 import sleekxmpp
 from sleekxmpp.xmlstream import ET
@@ -38,11 +39,21 @@ class HubClient(object):
         self.deviceId = device.id
         self.logger = logging.getLogger("Plugin.HubClient")
 
+        self.ready = False
+
         self.harmony_ip = device.pluginProps['address']
         self.harmony_port = 5222
 
-        self.ready = False
-
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(2.0)
+        try:
+            s.connect((self.harmony_ip, self.harmony_port))
+            s.shutdown(2)
+            self.logger.debug(device.name + u": Socket test OK")
+        except:
+            self.logger.debug(device.name + u": Socket test failure")
+            return
+ 
         try:
             self.auth_token = harmony_auth.get_auth_token(self.harmony_ip, self.harmony_port)
             if not self.auth_token:

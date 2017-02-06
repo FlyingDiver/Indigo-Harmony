@@ -153,10 +153,8 @@ class Plugin(indigo.PluginBase):
             if (hubClient.ready):
                 self.hubDict[device.id] = hubClient
             else:
-                self.logger.error(u"%s: Error starting harmonyHub device (%s), disabling..." % (device.name, device.id))
+                self.logger.error(u"%s: Error starting harmonyHub device, possibly bad IP address, disabling..." % (device.name, device.id))
                 indigo.device.enable(device, value=False)
-                indigo.device.updateStateOnServer(key="serverStatus", value="Disabled")
-                indigo.device.updateStateImageOnServer(indigo.kStateImageSel.SensorOff)
 
         else:
             self.logger.error(device.name + u": Duplicate Device ID" )
