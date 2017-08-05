@@ -117,6 +117,7 @@ class HubClient(object):
                 if "notify" in str(child.attrib):
                     if "connect.stateDigest" in str(child.attrib):
                         try:
+                            self.logger.threaddebug(hubDevice.name + u": messageHandler: Event connect.stateDigest, child.text = %s" % (child.text))
                             content = json.loads(child.text)
                         except Exception as e:
                             self.logger.error(hubDevice.name + u": Event state notify child.text parse error = %s" % str(e))
@@ -132,13 +133,14 @@ class HubClient(object):
                             self.plugin.triggerCheck(hubDevice, "activityNotification")
 
                     elif "automation.state" in str(child.attrib):
-                        self.logger.debug(hubDevice.name + u": messageHandler: Event automation notify, contents:")
                         try:
+                            self.logger.threaddebug(hubDevice.name + u": messageHandler: Event automation.state, child.text = %s" % (child.text))
                             content = json.loads(child.text)
                         except Exception as e:
                             self.logger.error(hubDevice.name + u": Event automation notify child.text parse error = %s" % str(e))
                             self.logger.error(hubDevice.name + u": Event automation notify child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
                         else:
+                            self.logger.debug(hubDevice.name + u": messageHandler: Event automation notify, contents:")
                             for key, device in content.items():
                                 self.logger.debug(hubDevice.name + u": Device: %s, status: %s, brightness: %i, on: %r" % (key, device['status'], device['brightness'], device['on']))
                                 stateList = [   {'key':'lastAutomationDevice', 'value':key},
@@ -155,17 +157,28 @@ class HubClient(object):
 
                 elif "startActivityFinished" in str(child.attrib):
                     try:
+                        self.logger.threaddebug(hubDevice.name + u": messageHandler: Event startActivityFinished, child.text = %s" % (child.text))
                         pairs = child.text.split(':')
-                        activityId = pairs[0].split('=')
-                        errorCode = pairs[1].split('=')
-                        errorString = pairs[2].split('=')
+                        self.logger.debug(hubDevice.name + u": messageHandler: Event startActivityFinished, pairs = %s" % (str(pairs)))
+                        for item in pairs:
+                            self.logger.debug(hubDevice.name + u": messageHandler: Event startActivityFinished, item = %s" % (str(item)))
+                            temp = item.split('=')
+                            if temp[0] == 'errorCode':
+                                errorCode = temp[1]
+                            elif temp[0] == 'errorString':
+                                errorString =  temp[1]
+                            elif temp[0] == 'activityId':
+                                activityId =  temp[1]
+                            else:
+                                self.logger.debug(hubDevice.name + u": messageHandler: Event startActivityFinished, unknown key/value: %s" % (item))
+                                  
                     except Exception as e:
                         self.logger.error(hubDevice.name + u": Event startActivityFinished child.text parse error = %s" % str(e))
                         self.logger.error(hubDevice.name + u": Event startActivityFinished child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
                     else:
-                        self.logger.debug(hubDevice.name + u": messageHandler: Event startActivityFinished, activityId = %s, errorCode = %s, errorString = %s" % (activityId[1], errorCode[1], errorString[1]))
+                        self.logger.debug(hubDevice.name + u": messageHandler: Event startActivityFinished, activityId = %s, errorCode = %s, errorString = %s" % (activityId, errorCode, errorString))
                         for activity in self.config["activity"]:
-                            if activityId[1] == activity[u'id']:
+                            if activityId == activity[u'id']:
                                 stateList = [   {'key':'currentActivityNum', 'value':activity[u'id']},
                                                 {'key':'currentActivityName', 'value':activity[u'label']}
                                             ]
@@ -177,6 +190,7 @@ class HubClient(object):
 
                 elif "pressType" in str(child.attrib):
                     try:
+                        self.logger.threaddebug(hubDevice.name + u": messageHandler: Event pressType, child.text = %s" % (child.text))
                         pressType = child.text.split('=')
                         self.logger.debug(hubDevice.name + u": messageHandler: Event pressType, Type = %s" % pressType[1])
                     except Exception as e:
@@ -185,18 +199,28 @@ class HubClient(object):
 
                 elif "startActivity" in str(child.attrib):
                     try:
-                        pairs = child.text.split(':')
-                        done = pairs[0].split('=')
-                        total = pairs[1].split('=')
-                        deviceId = pairs[2].split('=')
+                        self.logger.threaddebug(hubDevice.name + u": messageHandler: Event startActivity, child.text = %s" % (child.text))
+                        for item in pairs:
+                            self.logger.debug(hubDevice.name + u": messageHandler: Event startActivity, item = %s" % (str(item)))
+                            temp = item.split('=')
+                            if temp[0] == 'done':
+                                done = temp[1]
+                            elif temp[0] == 'total':
+                                total =  temp[1]
+                            elif temp[0] == 'deviceId':
+                                deviceId =  temp[1]
+                            else:
+                                self.logger.debug(hubDevice.name + u": messageHandler: Event startActivity, unknown key/value: %s" % (item))
+
                     except Exception as e:
                         self.logger.error(hubDevice.name + u": Event startActivity child.text parse error = %s" % str(e))
                         self.logger.error(hubDevice.name + u": Event startActivity child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
                     else:
-                        self.logger.debug(hubDevice.name + u": messageHandler: Event startActivity, done = %s, total = %s, deviceId = %s" % (done[1], total[1], deviceId[1]))
+                        self.logger.debug(hubDevice.name + u": messageHandler: Event startActivity, done = %s, total = %s, deviceId = %s" % (done, total, deviceId))
 
                 elif "helpdiscretes" in str(child.attrib):
                     try:
+                        self.logger.threaddebug(hubDevice.name + u": messageHandler: Event helpdiscretes, child.text = %s" % (child.text))
                         pairs = child.text.split(':')
                         if len(pairs) > 1:
                             done = pairs[0].split('=')
