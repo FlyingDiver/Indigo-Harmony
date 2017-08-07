@@ -51,7 +51,7 @@ class HubClient(object):
             s.shutdown(2)
             self.logger.debug(device.name + u": Socket test OK")
         except:
-            self.logger.debug(device.name + u": Socket test failure")
+            self.logger.warning(device.name + u": Socket test failure")
             return
  
         try:
@@ -200,6 +200,7 @@ class HubClient(object):
                 elif "startActivity" in str(child.attrib):
                     try:
                         self.logger.threaddebug(hubDevice.name + u": messageHandler: Event startActivity, child.text = %s" % (child.text))
+                        pairs = child.text.split(':')
                         for item in pairs:
                             self.logger.debug(hubDevice.name + u": messageHandler: Event startActivity, item = %s" % (str(item)))
                             temp = item.split('=')
@@ -222,17 +223,21 @@ class HubClient(object):
                     try:
                         self.logger.threaddebug(hubDevice.name + u": messageHandler: Event helpdiscretes, child.text = %s" % (child.text))
                         pairs = child.text.split(':')
-                        if len(pairs) > 1:
-                            done = pairs[0].split('=')
-                            total = pairs[1].split('=')
-                            deviceId = pairs[2].split('=')
-                            isHelpDiscretes = pairs[2].split('=')
-                        else:
-                            deviceId = pairs[0].split('=')
+                        for item in pairs:
+                            self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, item = %s" % (str(item)))
+                            temp = item.split('=')
+                            if temp[0] == 'done':
+                                done = temp[1]
+                            elif temp[0] == 'total':
+                                total =  temp[1]
+                            elif temp[0] == 'deviceId':
+                                deviceId =  temp[1]
+                            else:
+                                self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, unknown key/value: %s" % (item))
 
                     except Exception as e:
-                        self.logger.error(hubDevice.name + u": Event startActivity child.text parse error = %s" % str(e))
-                        self.logger.error(hubDevice.name + u": Event startActivity child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
+                        self.logger.error(hubDevice.name + u": Event helpdiscretes child.text parse error = %s" % str(e))
+                        self.logger.error(hubDevice.name + u": Event helpdiscretes child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
                     else:
                         if len(pairs) > 1:
                             self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, done = %s, total = %s, deviceId = %s, isHelpDiscretes = %s" % (done[1], total[1], deviceId[1], isHelpDiscretes[1]))

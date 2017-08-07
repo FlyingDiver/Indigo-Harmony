@@ -153,7 +153,7 @@ class Plugin(indigo.PluginBase):
             if (hubClient.ready):
                 self.hubDict[device.id] = hubClient
             else:
-                self.logger.error(u"%s: Error starting harmonyHub device, possibly bad IP address, disabling..." % (device.name, device.id))
+                self.logger.error(u"%s: Error starting harmonyHub device, possibly bad IP address, disabling..." % (device.name))
                 indigo.device.enable(device, value=False)
 
         else:
