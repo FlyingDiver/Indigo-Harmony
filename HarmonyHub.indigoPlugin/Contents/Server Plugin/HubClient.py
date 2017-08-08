@@ -185,8 +185,8 @@ class HubClient(object):
                                 hubDevice.updateStatesOnServer(stateList)
                                 broadcastDict = {'currentActivityNum': activity[u'id'], 'currentActivityName': activity[u'label']}
                                 indigo.server.broadcastToSubscribers(u"activityFinishedNotification", broadcastDict)
-                                self.plugin.triggerCheck(hubDevice, "activityFinishedNotification")
                                 break
+                        self.plugin.triggerCheck(hubDevice, "activityFinishedNotification")
 
                 elif "pressType" in str(child.attrib):
                     try:
@@ -196,6 +196,7 @@ class HubClient(object):
                     except Exception as e:
                         self.logger.error(hubDevice.name + u": Event pressType child.text parse error = %s" % str(e))
                         self.logger.error(hubDevice.name + u": Event pressType child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
+                    self.plugin.triggerCheck(hubDevice, "pressTypeNotification")
 
                 elif "startActivity" in str(child.attrib):
                     try:
@@ -218,6 +219,7 @@ class HubClient(object):
                         self.logger.error(hubDevice.name + u": Event startActivity child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
                     else:
                         self.logger.debug(hubDevice.name + u": messageHandler: Event startActivity, done = %s, total = %s, deviceId = %s" % (done, total, deviceId))
+                        self.plugin.triggerCheck(hubDevice, "startActivityNotification")
 
                 elif "helpdiscretes" in str(child.attrib):
                     try:
@@ -243,6 +245,7 @@ class HubClient(object):
                             self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, done = %s, total = %s, deviceId = %s, isHelpDiscretes = %s" % (done[1], total[1], deviceId[1], isHelpDiscretes[1]))
                         else:
                             self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, deviceId = %s" % deviceId[1])
+                        self.plugin.triggerCheck(hubDevice, "helpdiscretesNotification")
 
                 else:
                     self.logger.error(hubDevice.name + u": messageHandler: Unknown Event Type: %s\n%s" % (child.attrib, child.text))
