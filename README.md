@@ -4,16 +4,6 @@ Plugin for the Indigo Home Automation system.
 
 This plugin enables monitoring of certain activities on the Harmony Hub, and provides the capability to send Activity changes and device commands to the Hub.
 
-Communications with the hub uses the pyharmony library along with the sleekxmpp module.  Pyharmony is included with the plugin.  
-
-Use pip to install sleekxmpp:
-
-	sudo pip install sleekxmpp
-
-If you get an error not finding the pip command, do:
-
-	sudo easy_install pip
-
 This version of the plugin requires Indigo 7.
 
 **PluginID**: com.flyingdiver.indigoplugin.harmonyhub
