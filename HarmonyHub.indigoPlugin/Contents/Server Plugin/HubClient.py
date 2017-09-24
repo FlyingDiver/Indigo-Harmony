@@ -152,6 +152,12 @@ class HubClient(object):
                                 broadcastDict = {'lastAutomationDevice': key, 'lastAutomationStatus': device['status'], 'lastAutomationBrightness': device['brightness'], 'lastAutomationOnState': device['on']}
                                 indigo.server.broadcastToSubscribers(u"automationNotification", broadcastDict)
                                 self.plugin.triggerCheck(hubDevice, "automationNotification")
+
+                    elif "harmonyengine.metadata" in str(child.attrib):
+                        self.logger.threaddebug(hubDevice.name + u": messageHandler: Event harmonyengine.metadata, child.text = %s" % (child.text))
+                        hubDevice.updateStateOnServer(key='lastMetadataUpdate', value=child.text)
+                        self.plugin.triggerCheck(hubDevice, "metadataNotification")
+                        
                     else:
                         self.logger.error(hubDevice.name + u": messageHandler: Unknown Event Type: %s\n%s" % (child.attrib, child.text))
 
@@ -159,9 +165,9 @@ class HubClient(object):
                     try:
                         self.logger.threaddebug(hubDevice.name + u": messageHandler: Event startActivityFinished, child.text = %s" % (child.text))
                         pairs = child.text.split(':')
-                        self.logger.debug(hubDevice.name + u": messageHandler: Event startActivityFinished, pairs = %s" % (str(pairs)))
+#                        self.logger.debug(hubDevice.name + u": messageHandler: Event startActivityFinished, pairs = %s" % (str(pairs)))
                         for item in pairs:
-                            self.logger.debug(hubDevice.name + u": messageHandler: Event startActivityFinished, item = %s" % (str(item)))
+#                            self.logger.debug(hubDevice.name + u": messageHandler: Event startActivityFinished, item = %s" % (str(item)))
                             temp = item.split('=')
                             if temp[0] == 'errorCode':
                                 errorCode = temp[1]
@@ -189,21 +195,23 @@ class HubClient(object):
                         self.plugin.triggerCheck(hubDevice, "activityFinishedNotification")
 
                 elif "pressType" in str(child.attrib):
-                    try:
-                        self.logger.threaddebug(hubDevice.name + u": messageHandler: Event pressType, child.text = %s" % (child.text))
-                        pressType = child.text.split('=')
-                        self.logger.debug(hubDevice.name + u": messageHandler: Event pressType, Type = %s" % pressType[1])
-                    except Exception as e:
-                        self.logger.error(hubDevice.name + u": Event pressType child.text parse error = %s" % str(e))
-                        self.logger.error(hubDevice.name + u": Event pressType child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
-                    self.plugin.triggerCheck(hubDevice, "pressTypeNotification")
+                    pass
+                    
+#                     try:
+#                         self.logger.threaddebug(hubDevice.name + u": messageHandler: Event pressType, child.text = %s" % (child.text))
+#                         pressType = child.text.split('=')
+#                         self.logger.debug(hubDevice.name + u": messageHandler: Event pressType, Type = %s" % pressType[1])
+#                     except Exception as e:
+#                         self.logger.error(hubDevice.name + u": Event pressType child.text parse error = %s" % str(e))
+#                         self.logger.error(hubDevice.name + u": Event pressType child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
+#                     self.plugin.triggerCheck(hubDevice, "pressTypeNotification")
 
                 elif "startActivity" in str(child.attrib):
                     try:
                         self.logger.threaddebug(hubDevice.name + u": messageHandler: Event startActivity, child.text = %s" % (child.text))
                         pairs = child.text.split(':')
                         for item in pairs:
-                            self.logger.debug(hubDevice.name + u": messageHandler: Event startActivity, item = %s" % (str(item)))
+#                            self.logger.debug(hubDevice.name + u": messageHandler: Event startActivity, item = %s" % (str(item)))
                             temp = item.split('=')
                             if temp[0] == 'done':
                                 done = temp[1]
@@ -222,30 +230,32 @@ class HubClient(object):
                         self.plugin.triggerCheck(hubDevice, "startActivityNotification")
 
                 elif "helpdiscretes" in str(child.attrib):
-                    try:
-                        self.logger.threaddebug(hubDevice.name + u": messageHandler: Event helpdiscretes, child.text = %s" % (child.text))
-                        pairs = child.text.split(':')
-                        for item in pairs:
-                            self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, item = %s" % (str(item)))
-                            temp = item.split('=')
-                            if temp[0] == 'done':
-                                done = temp[1]
-                            elif temp[0] == 'total':
-                                total =  temp[1]
-                            elif temp[0] == 'deviceId':
-                                deviceId =  temp[1]
-                            else:
-                                self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, unknown key/value: %s" % (item))
-
-                    except Exception as e:
-                        self.logger.error(hubDevice.name + u": Event helpdiscretes child.text parse error = %s" % str(e))
-                        self.logger.error(hubDevice.name + u": Event helpdiscretes child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
-                    else:
-                        if len(pairs) > 1:
-                            self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, done = %s, total = %s, deviceId = %s, isHelpDiscretes = %s" % (done[1], total[1], deviceId[1], isHelpDiscretes[1]))
-                        else:
-                            self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, deviceId = %s" % deviceId[1])
-                        self.plugin.triggerCheck(hubDevice, "helpdiscretesNotification")
+                    pass
+                
+#                     try:
+#                         self.logger.threaddebug(hubDevice.name + u": messageHandler: Event helpdiscretes, child.text = %s" % (child.text))
+#                         pairs = child.text.split(':')
+#                         for item in pairs:
+#                             self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, item = %s" % (str(item)))
+#                             temp = item.split('=')
+#                             if temp[0] == 'done':
+#                                 done = temp[1]
+#                             elif temp[0] == 'total':
+#                                 total =  temp[1]
+#                             elif temp[0] == 'deviceId':
+#                                 deviceId =  temp[1]
+#                             else:
+#                                 self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, unknown key/value: %s" % (item))
+# 
+#                     except Exception as e:
+#                         self.logger.error(hubDevice.name + u": Event helpdiscretes child.text parse error = %s" % str(e))
+#                         self.logger.error(hubDevice.name + u": Event helpdiscretes child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
+#                     else:
+#                         if len(pairs) > 1:
+#                             self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, done = %s, total = %s, deviceId = %s, isHelpDiscretes = %s" % (done[1], total[1], deviceId[1], isHelpDiscretes[1]))
+#                         else:
+#                             self.logger.debug(hubDevice.name + u": messageHandler: Event helpdiscretes, deviceId = %s" % deviceId[1])
+#                         self.plugin.triggerCheck(hubDevice, "helpdiscretesNotification")
 
                 else:
                     self.logger.error(hubDevice.name + u": messageHandler: Unknown Event Type: %s\n%s" % (child.attrib, child.text))

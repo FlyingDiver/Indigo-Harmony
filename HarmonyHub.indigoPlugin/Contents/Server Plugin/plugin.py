@@ -11,7 +11,7 @@ import sleekxmpp
 from ghpu import GitHubPluginUpdater
 from HubClient import HubClient
 
-kCurDevVersCount = 0        # current version of plugin devices
+kCurDevVersCount = 1        # current version of plugin devices
 
 ################################################################################
 class Plugin(indigo.PluginBase):

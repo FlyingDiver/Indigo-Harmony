@@ -54,6 +54,11 @@
                 <TriggerLabel>Last Automation Brightness</TriggerLabel>
                 <ControlPageLabel>Last Automation Brightness</ControlPageLabel>
             </State>
+            <State id="lastMetadataUpdate">
+                <ValueType>String</ValueType>
+                <TriggerLabel>Last MetaData Update</TriggerLabel>
+                <ControlPageLabel>Last MetaData Update</ControlPageLabel>
+            </State>
         </States>
         <UiDisplayStateId>currentActivityName</UiDisplayStateId>
     </Device>
