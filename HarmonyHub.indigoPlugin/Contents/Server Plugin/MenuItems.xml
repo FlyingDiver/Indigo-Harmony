@@ -28,17 +28,4 @@
             </Field>
         </ConfigUI>
     </MenuItem>
-    <MenuItem id="titleSeparator2" type="separator" />
-    <MenuItem id="checkForUpdates">
-        <Name>Check for Updates</Name>
-        <CallbackMethod>checkForUpdates</CallbackMethod>
-    </MenuItem>
-    <MenuItem id="updatePlugin">
-        <Name>Update Plugin</Name>
-        <CallbackMethod>updatePlugin</CallbackMethod>
-    </MenuItem>
-    <MenuItem id="forceUpdate">
-        <Name>Force Update</Name>
-        <CallbackMethod>forceUpdate</CallbackMethod>
-    </MenuItem>
 </MenuItems>

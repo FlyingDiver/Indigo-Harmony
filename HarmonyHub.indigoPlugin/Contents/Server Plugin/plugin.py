@@ -8,7 +8,6 @@ import logging
 
 import sleekxmpp
 
-from ghpu import GitHubPluginUpdater
 from HubClient import HubClient
 
 kCurDevVersCount = 1        # current version of plugin devices
@@ -38,11 +37,6 @@ class Plugin(indigo.PluginBase):
     def startup(self):
         self.logger.info(u"Starting Harmony Hub")
 
-        self.updater = GitHubPluginUpdater(self)
-        self.updateFrequency = float(self.pluginPrefs.get('updateFrequency', 24)) * 60.0 * 60.0
-        self.logger.debug(u"updateFrequency = " + str(self.updateFrequency))
-        self.next_update_check = time.time()
-
         self.hubDict = dict()
         self.triggers = { }
 
@@ -56,12 +50,6 @@ class Plugin(indigo.PluginBase):
             while True:
 
                 # All hub messages are done in callbacks.  No polling.
-
-                # Plugin Update check
-
-                if (self.updateFrequency > 0.0) and (time.time() > self.next_update_check):
-                    self.next_update_check = time.time() + self.updateFrequency
-                    self.updater.checkForUpdate()
 
                 self.sleep(60.0)
 
@@ -100,12 +88,7 @@ class Plugin(indigo.PluginBase):
     def validatePrefsConfigUi(self, valuesDict):
         self.logger.debug(u"validatePrefsConfigUi called")
         errorMsgDict = indigo.Dict()
-        try:
-            poll = int(valuesDict['updateFrequency'])
-            if (poll < 0) or (poll > 24):
-                raise
-        except:
-            errorMsgDict['updateFrequency'] = u"Update frequency is invalid - enter a valid number (between 0 and 24)"
+ 
         if len(errorMsgDict) > 0:
             return (False, valuesDict, errorMsgDict)
         return (True, valuesDict)
@@ -119,11 +102,6 @@ class Plugin(indigo.PluginBase):
                 self.logLevel = logging.INFO
             self.indigo_log_handler.setLevel(self.logLevel)
             self.logger.debug(u"logLevel = " + str(self.logLevel))
-
-            self.updateFrequency = float(self.pluginPrefs.get('updateFrequency', "24")) * 60.0 * 60.0
-            self.logger.debug(u"updateFrequency = " + str(self.updateFrequency))
-            self.next_update_check = time.time()
-
 
     ########################################
     # Called for each enabled Device belonging to plugin
@@ -391,15 +369,6 @@ class Plugin(indigo.PluginBase):
 
         return (True, valuesDict)
 
-
-    def checkForUpdates(self):
-        self.updater.checkForUpdate()
-
-    def updatePlugin(self):
-        self.updater.update()
-
-    def forceUpdate(self):
-        self.updater.update(currentVersion='0.0.0')
 
     ########################################
     # ConfigUI methods
