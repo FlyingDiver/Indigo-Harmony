@@ -49,11 +49,15 @@ class HubClient(object):
         try:
             s.connect((self.harmony_ip, self.harmony_port))
             s.shutdown(2)
-            self.logger.debug(device.name + u": Socket test OK")
+            self.logger.debug(device.name + u": Socket test OK, connecting...")
+            self.connect()
+            
         except:
-            self.logger.warning(device.name + u": Socket test failure")
-            return
+            self.logger.warning(device.name + u": Socket test failure, skipping hub connection")
+    
  
+    def connect(self):
+    
         try:
             self.auth_token = harmony_auth.get_auth_token(self.harmony_ip, self.harmony_port)
             if not self.auth_token:
@@ -70,15 +74,8 @@ class HubClient(object):
                 self.logger.debug(device.name + u": Waiting for client.sessionstarted")
                 time.sleep(0.1)
 
-            self.refreshConfig(device)
-            self.ready = True
-
         except Exception as e:
             self.logger.debug(device.name + u": Error setting up hub connection: " + str(e))
-
-
-
-    def refreshConfig(self, device):
 
         try:
             self.config = self.client.get_config()
@@ -106,6 +103,8 @@ class HubClient(object):
                     device.updateStatesOnServer(stateList)
                 else:
                     self.logger.debug(device.name + u": Activity: %s (%s)" % (activity[u'label'], activity[u'id']))
+                        
+        self.ready = True
 
 
     def messageHandler(self, data):
@@ -140,9 +139,8 @@ class HubClient(object):
                             self.logger.error(hubDevice.name + u": Event automation notify child.text parse error = %s" % str(e))
                             self.logger.error(hubDevice.name + u": Event automation notify child.attrib = %s, child.text:\n%s" % (child.attrib, child.text))
                         else:
-                            self.logger.debug(hubDevice.name + u": messageHandler: Event automation notify, contents:")
                             for key, device in content.items():
-                                self.logger.debug(hubDevice.name + u": Device: %s, status: %s, brightness: %i, on: %r" % (key, device['status'], device['brightness'], device['on']))
+                                self.logger.debug(hubDevice.name + u": messageHandler: Event automation notify, device: %s, status: %s, brightness: %i, on: %r" % (key, device['status'], device['brightness'], device['on']))
                                 stateList = [   {'key':'lastAutomationDevice', 'value':key},
                                                 {'key':'lastAutomationStatus', 'value':device['status']},
                                                 {'key':'lastAutomationBrightness', 'value':str(device['brightness'])},

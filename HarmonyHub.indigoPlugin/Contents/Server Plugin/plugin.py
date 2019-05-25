@@ -31,9 +31,6 @@ class Plugin(indigo.PluginBase):
         self.indigo_log_handler.setLevel(self.logLevel)
         self.logger.debug(u"logLevel = " + str(self.logLevel))
 
-    def __del__(self):
-        indigo.PluginBase.__del__(self)
-
     def startup(self):
         self.logger.info(u"Starting Harmony Hub")
 
@@ -49,8 +46,12 @@ class Plugin(indigo.PluginBase):
         try:
             while True:
 
-                # All hub messages are done in callbacks.  No polling.
-
+                # try to make sure all hub devices are connected
+                
+                for hubDevice in self.hubDict.values():
+                    if not hubDevice.ready:
+                        hubDevice.connect()
+                        
                 self.sleep(60.0)
 
         except self.stopThread:
@@ -127,13 +128,8 @@ class Plugin(indigo.PluginBase):
 
         if device.id not in self.hubDict:
             self.logger.debug(u"%s: Starting harmonyHub device (%s)" % (device.name, device.id))
-            hubClient = HubClient(self, device)
-            if (hubClient.ready):
-                self.hubDict[device.id] = hubClient
-            else:
-                self.logger.error(u"%s: Error starting harmonyHub device, possibly bad IP address, disabling..." % (device.name))
-                indigo.device.enable(device, value=False)
-
+            self.hubDict[device.id] = HubClient(self, device)
+            
         else:
             self.logger.error(device.name + u": Duplicate Device ID" )
 
