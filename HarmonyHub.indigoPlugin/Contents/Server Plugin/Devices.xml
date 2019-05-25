@@ -62,4 +62,20 @@
         </States>
         <UiDisplayStateId>currentActivityName</UiDisplayStateId>
     </Device>
+    <Device type="relay" id="activityDevice">
+        <Name>Activity Device</Name>
+        <ConfigUI>
+            <SupportURL>http://forums.indigodomo.com/viewforum.php?f=211</SupportURL>
+            <Field id="SupportsStatusRequest" type="checkbox" defaultValue="false" hidden="true" />
+            <Field id="hubID" type="menu">
+                <Label>Select Hub:</Label>
+                <List class="self" filter="" method="pickHub" dynamicReload="true"/>
+            </Field>            
+            <Field id="activity" type="menu">
+                <Label>Activity:</Label>
+                <List class="self" filter="" method="activityListGenerator"/>
+                <CallbackMethod>menuChanged</CallbackMethod>
+            </Field>
+        </ConfigUI>
+    </Device>
 </Devices>
