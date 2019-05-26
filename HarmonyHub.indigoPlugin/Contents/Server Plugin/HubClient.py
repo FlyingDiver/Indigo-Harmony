@@ -50,13 +50,13 @@ class HubClient(object):
             s.connect((self.harmony_ip, self.harmony_port))
             s.shutdown(2)
             self.logger.debug(device.name + u": Socket test OK, connecting...")
-            self.connect()
+            self.connect(device)
             
         except:
             self.logger.warning(device.name + u": Socket test failure, skipping hub connection")
     
  
-    def connect(self):
+    def connect(self, device):
     
         try:
             self.auth_token = harmony_auth.get_auth_token(self.harmony_ip, self.harmony_port)
