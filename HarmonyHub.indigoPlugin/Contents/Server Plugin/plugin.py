@@ -126,13 +126,20 @@ class Plugin(indigo.PluginBase):
         else:
             self.logger.error(u"Unknown device version: " + str(instanceVers) + " for device " + device.name)
 
-        if device.id not in self.hubDict:
-            self.logger.debug(u"%s: Starting harmonyHub device (%s)" % (device.name, device.id))
-            self.hubDict[device.id] = HubClient(self, device)
-            
-        else:
-            self.logger.error(device.name + u": Duplicate Device ID" )
+        if device.deviceTypeId == "harmonyHub":
 
+            if device.id not in self.hubDict:
+                self.logger.debug(u"%s: Starting harmonyHub device (%s)" % (device.name, device.id))
+                self.hubDict[device.id] = HubClient(self, device)
+            
+            else:
+                self.logger.error(device.name + u": Duplicate Device ID" )
+
+        elif device.deviceTypeId == "activityDevice":
+            pass
+        
+        else:
+            self.logger.error(u"{}: Unknown device type: {}".format(device.name, device.deviceTypeId))
 
     ########################################
     # Terminate communication with servers
@@ -165,15 +172,48 @@ class Plugin(indigo.PluginBase):
         return (True, valuesDict)
 
     ########################################
+
+    def actionControlDimmerRelay(self, action, dev):
+        self.logger.debug(u"{}: actionControlDevice: action: {}, activity: {}".format(dev.name, action.deviceAction, dev.pluginProps['activity']))
+
+        hubID = dev.pluginProps['hubID']
+        
+        if action.deviceAction == indigo.kDeviceAction.TurnOn:
+            self.doActivity(hubID, dev.pluginProps['activity'])
+            dev.updateStateOnServer(key="onOffState", value=True)
+
+        elif action.deviceAction == indigo.kDeviceAction.TurnOff:
+            self.doActivity(hubID, "-1")
+            dev.updateStateOnServer(key="onOffState", value=False)
+
+        elif action.deviceAction == indigo.kDeviceAction.Toggle:
+            if dev.onState:     
+                self.doActivity(hubID, "-1")
+                dev.updateStateOnServer(key="onOffState", value=False)
+            else:
+                self.doActivity(hubID, dev.pluginProps['activity'])
+                dev.updateStateOnServer(key="onOffState", value=True)
+
+        else:
+            self.logger.error(u"{}: actionControlDevice: Unsupported action requested: {}".format(dev.name, action))
+
+
+
+    ########################################
     # Plugin Actions object callbacks
 
     def startActivity(self, pluginAction):
-        hubDevice = indigo.devices[pluginAction.deviceId]
+        self.doActivity(pluginAction.deviceId, pluginAction.props["activity"])
+        
+    def powerOff(self, pluginAction):
+        self.doActivity(pluginAction.deviceId, "-1")
+
+    def doActivity(self, deviceId, activityID):
+        hubDevice = indigo.devices[int(deviceId)]
         if not hubDevice.enabled:
-            self.logger.debug(hubDevice.name + u": Can't send Activity commands when hub is not enabled")
+            self.logger.error(hubDevice.name + u": Can't send Activity commands when hub is not enabled")
             return
         hubClient = self.hubDict[hubDevice.id]
-        activityID = pluginAction.props["activity"]
         self.logger.debug(hubDevice.name + u": Start Activity - " + activityID)
 
         retries = 0
@@ -190,27 +230,6 @@ class Plugin(indigo.PluginBase):
                 hubClient.current_activity_id = activityID
                 return
 
-    def powerOff(self, pluginAction):
-        hubDevice = indigo.devices[pluginAction.deviceId]
-        if not hubDevice.enabled:
-            self.logger.debug(hubDevice.name + u": Can't send Activity commands when hub is not enabled")
-            return
-        hubClient = self.hubDict[hubDevice.id]
-        self.logger.debug(hubDevice.name + u": Power Off")
-
-        retries = 0
-        while retries < 3:
-            try:
-                hubClient.client.start_activity(-1)
-            except sleekxmpp.exceptions.IqTimeout:
-                self.logger.debug(hubDevice.name + u": Time out in hub.client.startActivity")
-                retries += 1
-            except sleekxmpp.exceptions.IqError:
-                self.logger.debug(hubDevice.name + u": IqError in hub.client.startActivity")
-                return
-            else:
-                hubClient.current_activity_id = "-1"
-                return
 
     def findDeviceForCommand(self, configData, commandName, activityID):
         self.logger.debug(u'findDeviceForCommand: looking for %s in %s' % (commandName, activityID))
@@ -371,9 +390,21 @@ class Plugin(indigo.PluginBase):
     ########################################
 
     def activityListGenerator(self, filter, valuesDict, typeId, targetId):
-        self.logger.debug(u"activityListGenerator: typeId = %s, targetId = %s" % (typeId, targetId))
+        self.logger.debug(u"activityListGenerator: typeId = {}, targetId = {}, valuesDict = {}".format(typeId, targetId, valuesDict))
         retList = []
-        config = self.hubDict[targetId].config
+        
+        if typeId  == "activityDevice":
+            if len(valuesDict) == 0:    # no hub selected yet
+                return retList
+            else:
+                targetId = int(valuesDict["hubID"])
+                
+        try:
+            config = self.hubDict[targetId].config
+        except:
+            self.logger.error(u"activityListGenerator: targetId {} not in hubDict".format(targetId))
+            return retList
+            
         for activity in config["activity"]:
             if activity['id'] != "-1":
                 retList.append((activity['id'], activity["label"]))

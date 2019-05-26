@@ -70,10 +70,11 @@
             <Field id="hubID" type="menu">
                 <Label>Select Hub:</Label>
                 <List class="self" filter="" method="pickHub" dynamicReload="true"/>
+                <CallbackMethod>menuChanged</CallbackMethod>
             </Field>            
             <Field id="activity" type="menu">
                 <Label>Activity:</Label>
-                <List class="self" filter="" method="activityListGenerator"/>
+                <List class="self" filter="" method="activityListGenerator" dynamicReload="true"/>
                 <CallbackMethod>menuChanged</CallbackMethod>
             </Field>
         </ConfigUI>
