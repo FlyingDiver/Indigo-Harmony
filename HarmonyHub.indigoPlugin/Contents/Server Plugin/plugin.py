@@ -35,6 +35,7 @@ class Plugin(indigo.PluginBase):
         self.logger.info(u"Starting Harmony Hub")
 
         self.hubDict = dict()
+        self.activityDict = dict()
         self.triggers = { }
 
     def shutdown(self):
@@ -136,22 +137,33 @@ class Plugin(indigo.PluginBase):
                 self.logger.error(device.name + u": Duplicate Device ID" )
 
         elif device.deviceTypeId == "activityDevice":
-            pass
+            self.activityDict[device.id] = device.pluginProps['activity']
         
         else:
-            self.logger.error(u"{}: Unknown device type: {}".format(device.name, device.deviceTypeId))
+            self.logger.error(u"{}: deviceStartComm - Unknown device type: {}".format(device.name, device.deviceTypeId))
 
     ########################################
     # Terminate communication with servers
     #
     def deviceStopComm(self, device):
         self.logger.debug(u'Called deviceStopComm(self, device): %s (%s)' % (device.name, device.id))
-        try:
-            hubClient = self.hubDict[device.id]
-            hubClient.client.disconnect(send_close=True)
-            self.hubDict.pop(device.id, None)
-        except:
-            pass
+        
+        if device.deviceTypeId == "harmonyHub":
+            try:
+                hubClient = self.hubDict[device.id]
+                hubClient.client.disconnect(send_close=True)
+                self.hubDict.pop(device.id, None)
+            except:
+                pass
+                
+        elif device.deviceTypeId == "activityDevice":
+            try:
+                self.hubDict.pop(device.id, None)
+            except:
+                pass
+
+        else:
+            self.logger.error(u"{}: deviceStopComm - Unknown device type: {}".format(device.name, device.deviceTypeId))
 
     ########################################
     def validateDeviceConfigUi(self, valuesDict, typeId, devId):
@@ -196,7 +208,6 @@ class Plugin(indigo.PluginBase):
 
         else:
             self.logger.error(u"{}: actionControlDevice: Unsupported action requested: {}".format(dev.name, action))
-
 
 
     ########################################
