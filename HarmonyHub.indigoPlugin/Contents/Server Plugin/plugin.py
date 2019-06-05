@@ -31,17 +31,34 @@ class Plugin(indigo.PluginBase):
         self.indigo_log_handler.setLevel(self.logLevel)
         self.logger.debug(u"logLevel = " + str(self.logLevel))
 
+        indigo.server.subscribeToBroadcast(pluginId, u"activityFinishedNotification", "activityFinishedHandler")
+
+
     def startup(self):
         self.logger.info(u"Starting Harmony Hub")
 
         self.hubDict = dict()
         self.activityDict = dict()
         self.triggers = { }
+        
 
     def shutdown(self):
         self.logger.info(u"Shutting down Harmony Hub")
+        
 
+    def activityFinishedHandler(self, broadcastDict):
+        self.logger.debug("activityFinishedHandler: {} ({}) on hub {}".format(broadcastDict['currentActivityName'], broadcastDict['currentActivityNum'], broadcastDict['hubID']))
 
+        for activityDevice in self.activityDict.values():
+            self.logger.debug("Checking activity: {}, hub: {}".format(activityDevice.pluginProps['activity'], activityDevice.pluginProps['hubID']))
+            
+            if broadcastDict['hubID'] == activityDevice.pluginProps['hubID']:
+                if broadcastDict['currentActivityNum'] == activityDevice.pluginProps['activity']:
+                    activityDevice.updateStateOnServer(key="onOffState", value=True)
+                else:
+                    activityDevice.updateStateOnServer(key="onOffState", value=False)
+
+    
     def runConcurrentThread(self):
 
         try:
@@ -130,14 +147,14 @@ class Plugin(indigo.PluginBase):
         if device.deviceTypeId == "harmonyHub":
 
             if device.id not in self.hubDict:
-                self.logger.debug(u"%s: Starting harmonyHub device (%s)" % (device.name, device.id))
+                self.logger.debug(u"{}: Starting harmonyHub device ({})".format(device.name, device.id))
                 self.hubDict[device.id] = HubClient(self, device)
             
             else:
                 self.logger.error(device.name + u": Duplicate Device ID" )
 
         elif device.deviceTypeId == "activityDevice":
-            self.activityDict[device.id] = device.pluginProps['activity']
+            self.activityDict[device.id] = device
         
         else:
             self.logger.error(u"{}: deviceStartComm - Unknown device type: {}".format(device.name, device.deviceTypeId))
@@ -146,7 +163,7 @@ class Plugin(indigo.PluginBase):
     # Terminate communication with servers
     #
     def deviceStopComm(self, device):
-        self.logger.debug(u'Called deviceStopComm(self, device): %s (%s)' % (device.name, device.id))
+        self.logger.debug(u'Called deviceStopComm(self, device): {} ({})'.format(device.name, device.id))
         
         if device.deviceTypeId == "harmonyHub":
             try:
@@ -192,19 +209,15 @@ class Plugin(indigo.PluginBase):
         
         if action.deviceAction == indigo.kDeviceAction.TurnOn:
             self.doActivity(hubID, dev.pluginProps['activity'])
-            dev.updateStateOnServer(key="onOffState", value=True)
 
         elif action.deviceAction == indigo.kDeviceAction.TurnOff:
             self.doActivity(hubID, "-1")
-            dev.updateStateOnServer(key="onOffState", value=False)
 
         elif action.deviceAction == indigo.kDeviceAction.Toggle:
             if dev.onState:     
                 self.doActivity(hubID, "-1")
-                dev.updateStateOnServer(key="onOffState", value=False)
             else:
                 self.doActivity(hubID, dev.pluginProps['activity'])
-                dev.updateStateOnServer(key="onOffState", value=True)
 
         else:
             self.logger.error(u"{}: actionControlDevice: Unsupported action requested: {}".format(dev.name, action))
