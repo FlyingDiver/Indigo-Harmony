@@ -66,9 +66,9 @@ class Plugin(indigo.PluginBase):
 
                 # try to make sure all hub devices are connected
                 
-                for hubDevice in self.hubDict.values():
-                    if not hubDevice.ready:
-                        hubDevice.connect()
+                for devID, hub in self.hubDict.items():
+                    if not hub.ready:
+                        hub.connect(indigo.devices[devID])
                         
                 self.sleep(60.0)
 
@@ -168,8 +168,8 @@ class Plugin(indigo.PluginBase):
         if device.deviceTypeId == "harmonyHub":
             try:
                 hubClient = self.hubDict[device.id]
-                hubClient.client.disconnect(send_close=True)
                 self.hubDict.pop(device.id, None)
+                hubClient.client.disconnect(send_close=True)
             except:
                 pass
                 
