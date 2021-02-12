@@ -67,12 +67,17 @@ class Plugin(indigo.PluginBase):
                 # try to make sure all hub devices are connected
                 
                 for devID, hub in self.hubDict.items():
-                    if not hub.ready:
-                        hub.connect(indigo.devices[devID])
+                    dev = indigo.devices[devID]
+                    try:
+                        if not hub.ready:
+                            hub.connect(dev)
+                    except:
+                        self.logger.warning(u"{}: Hub communication error, check XMPP setting.".format(dev.name))
+                        indigo.device.enable(dev, False)
                         
                 self.sleep(60.0)
 
-        except self.stopThread:
+        except self.StopThread:
             pass
 
     ####################
