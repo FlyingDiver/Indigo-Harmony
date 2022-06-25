@@ -65,6 +65,8 @@ class Plugin(indigo.PluginBase):
         self.logger.info(f"Harmony Hub starting")
 
         # async thread is used instead of concurrent thread
+        self._event_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self._event_loop)
         self._async_thread = threading.Thread(target=self._run_async_thread)
         self._async_thread.start()
 
@@ -144,6 +146,7 @@ class Plugin(indigo.PluginBase):
 
     ########################################
     # Plugin Actions object callbacks
+    ########################################
 
     def startActivity(self, pluginAction):
         self.doActivity(pluginAction.deviceId, pluginAction.props["activity"])
@@ -156,123 +159,102 @@ class Plugin(indigo.PluginBase):
         client = self._async_running_clients[self.hub_devices[deviceId].address]
         self._event_loop.create_task(self.start_activity(client, int(activityID)))
 
-    def findDeviceForCommand(self, configData, commandName, activityID):
-        self.logger.debug(f'findDeviceForCommand: looking for {commandName} in {activityID}')
+    ########################################
 
-        for activity in configData["activity"]:
-            if activity["id"] == activityID:
-                self.logger.debug(f'findDeviceForCommand:   looking in {activity["label"]}')
+    def findDeviceForCommand(self, config_data, commandName, activityID):
+        self.logger.debug(f'findDeviceForCommand: looking for {commandName} in {activityID}')
+        self.logger.threaddebug(f'findDeviceForCommand: config_data =\n{config_data}')
+
+        for activity in config_data["activity"]:
+            if activity["id"] != str(activityID):
+                self.logger.debug(f'findDeviceForCommand: skipping {activity["label"]}')
+            else:
+                self.logger.debug(f'findDeviceForCommand: looking in {activity["label"]}')
                 for group in activity["controlGroup"]:
-                    self.logger.debug(f'findDeviceForCommand:     looking in {group["name"]}')
+                    self.logger.debug(f'findDeviceForCommand: looking in {group["name"]}')
                     for function in group['function']:
                         if function['name'] == commandName:
                             action = json.loads(function["action"])
                             device = action["deviceId"]
                             devCommand = action["command"]
-                            self.logger.debug(f'findDeviceForCommand:       function {function["name"]}, device = {device}, devCommand = {devCommand}')
+                            self.logger.debug(f'findDeviceForCommand: function {function["name"]}, device = {device}, devCommand = {devCommand}')
                             return device, devCommand
-            else:
-                self.logger.debug(f'findDeviceForCommand:     skipping {activity["label"]}')
 
         self.logger.debug('findDeviceForCommand: command not found')
         return None, None
 
-    def findCommandForDevice(self, configData, commandName, deviceID):
-        self.logger.debug(f'findCommandForDevice: looking for {commandName} in {deviceID}')
+    def findCommandForDevice(self, config_data, command_name, device_id):
+        self.logger.debug(f'findCommandForDevice: looking for {command_name} in {device_id}')
+        self.logger.threaddebug(f'findCommandForDevice: config_data =\n{config_data}')
 
-        for device in configData["device"]:
-            if device["id"] == deviceID:
-                self.logger.debug(f'findCommandForDevice:   looking in {device["label"]}')
+        for device in config_data["device"]:
+            if device["id"] != str(device_id):
+                self.logger.debug(f'findCommandForDevice: skipping {device["label"]}')
+            else:
+                self.logger.debug(f'findCommandForDevice: looking in {device["label"]}')
                 for group in device["controlGroup"]:
-                    self.logger.debug(f'findCommandForDevice:     looking in {group["name"]}')
+                    self.logger.debug(f'findCommandForDevice: looking in {group["name"]}')
                     for function in group['function']:
-                        if function['name'] == commandName:
+                        if function['name'] == command_name:
                             action = json.loads(function["action"])
                             devCommand = action["command"]
-                            self.logger.debug(f'findCommandForDevice:       function {function["name"]}, devCommand = {devCommand}')
+                            self.logger.debug(f'findCommandForDevice: function {function["name"]}, devCommand = {devCommand}')
                             return devCommand
-            else:
-                self.logger.debug(f'findCommandForDevice: skipping {device["label"]}')
 
         self.logger.debug('findCommandForDevice: command not found')
         return None
 
+    ########################################
+
     def sendCurrentActivityCommand(self, pluginAction):
         hub_device = indigo.devices[pluginAction.deviceId]
+        delay = int(pluginAction.props.get("delay", 0))
+
         if not hub_device.enabled:
             self.logger.debug(f"{ hub_device.name}: Can't send Activity commands when hub is not enabled")
             return
-        client = self._async_running_clients[self.hub_devices[deviceId].address]
-        if int(client.current_activity_id) <= 0:
+        client = self._async_running_clients[self.hub_devices[hub_device.id].address]
+        activity_id, activity_name = client.current_activity
+        if int(activity_id) <= 0:
             self.logger.debug(f"{hub_device.name} Can't send Activity commands when no Activity is running")
             return
 
-        commandName = pluginAction.props["command"]
-        if commandName is None:
+        command_name = pluginAction.props["command"]
+        if command_name is None:
             self.logger.error(f"{hub_device.name}: sendCurrentActivityCommand: command property invalid in pluginProps")
             return
 
-        (device, devCommand) = self.findDeviceForCommand(hubClient.config, commandName, client.current_activity_id)
+        (device, command) = self.findDeviceForCommand(client.config, command_name, activity_id)
 
         if device is None:
-            self.logger.warning(f"{ hub_device.name}: sendCurrentActivityCommand: No command '{commandName}' in current activity")
+            self.logger.warning(f"{ hub_device.name}: sendCurrentActivityCommand: No command '{command}' in current activity")
             return
 
-        self.logger.debug(f"{hub_device.name}: sendCurrentActivityCommand: {commandName} ({devCommand}) to {device}")
+        self.logger.debug(f"{hub_device.name}: sendCurrentActivityCommand: {command_name} ({command}) to {device} with delay {delay}")
         try:
-            client.client.send_command(device, devCommand)
-        except sleekxmpp.exceptions.IqTimeout:
-            self.logger.debug(f"{ hub_device.name}: Time out in hub.client.send_command")
-        except sleekxmpp.exceptions.IqError:
-            self.logger.debug(f"{ hub_device.name}: IqError in hub.client.send_command")
+            self._event_loop.create_task(self.send_command(client, device, command, delay))
         except Exception as e:
-            self.logger.debug(f"{ hub_device.name}: Error in hub.client.send_command: {e}")
-
-    def sendActivityCommand(self, pluginAction):
-        hub_device = indigo.devices[pluginAction.deviceId]
-        if not hub_device.enabled:
-            self.logger.debug(f"{ hub_device.name}: Can't send Activity commands when hub is not enabled")
-            return
-        hub = self.hub_devices[hub_device.id]
-        if int(hub.current_activity_id) <= 0:
-            self.logger.debug(f"{ hub_device.name}: Can't send Activity commands when no Activity is running")
-            return
-
-        commandName = pluginAction.props["command"]
-        activity = pluginAction.props["activity"]
-        device = pluginAction.props["device"]
-        devCommand = self.findCommandForDevice(hubClient.config, commandName, device)
-
-        self.logger.debug(f"{hub_device.name}: sendActivityCommand: {commandName} ({devCommand}) to {device} for {activity}")
-        try:
-            hub.client.send_command(device, devCommand)
-        except sleekxmpp.exceptions.IqTimeout:
-            self.logger.debug(f"{ hub_device.name}: Time out in hub.client.send_command")
-        except sleekxmpp.exceptions.IqError:
-            self.logger.debug(f"{ hub_device.name}: IqError in hub.client.send_command")
-        except Exception as e:
-            self.logger.debug(f"{ hub_device.name}: Error in hub.client.send_command: {e}")
+            self.logger.debug(f"{ hub_device.name}: Error in send_command: {e}")
 
     def sendDeviceCommand(self, pluginAction):
         hub_device = indigo.devices[pluginAction.deviceId]
+        delay = int(pluginAction.props.get("delay",0))
+
         if not hub_device.enabled:
             self.logger.debug(f"{ hub_device.name}: Can't send commands when hub is not enabled")
             return
-        hubClient = self.hub_devices[hub_device.id]
+        client = self._async_running_clients[self.hub_devices[hub_device.id].address]
+        activity_id, activity_name = client.current_activity
 
-        commandName = pluginAction.props["command"]
+        command_name = pluginAction.props["command"]
         device = pluginAction.props["device"]
-        devCommand = self.findCommandForDevice(hubClient.config, commandName, device)
+        command = self.findCommandForDevice(client.config, command_name, device)
 
-        self.logger.debug(f"{hub_device.name}: sendDeviceCommand: {commandName} ({devCommand}) to {device}")
+        self.logger.debug(f"{hub_device.name}: sendDeviceCommand: {command_name} ({command}) to {device} with delay {delay}")
         try:
-            hubClient.client.send_command(device, devCommand)
-        except sleekxmpp.exceptions.IqTimeout:
-            self.logger.debug(f":{hub_device.name} Time out in hub.client.send_command")
-        except sleekxmpp.exceptions.IqError:
-            self.logger.debug(f":{hub_device.name} IqError in hub.client.send_command")
+            self._event_loop.create_task(self.send_command(client, device, command, delay))
         except Exception as e:
-            self.logger.debug(f":{hub_device.name} Error in hub.client.send_command: {e}")
+            self.logger.debug(f":{hub_device.name} Error in send_command: {e}")
 
     ########################################
     # Menu Methods
@@ -306,9 +288,10 @@ class Plugin(indigo.PluginBase):
 
         for activity in config.get('activity', []):
             if activity['id'] != "-1":
+                self.logger.threaddebug(f"activityListGenerator: Adding activity = '{activity['id']}', label = '{activity['label']}'")
                 retList.append((activity['id'], activity["label"]))
         retList.sort(key=lambda tup: tup[1])
-        self.logger.debug(f"activityListGenerator: {len(retList):d} items returned")
+        self.logger.debug(f"activityListGenerator: {len(retList)} items returned")
         return retList
 
     def deviceListGenerator(self, filter, valuesDict, typeId, targetId):
@@ -316,9 +299,10 @@ class Plugin(indigo.PluginBase):
         retList = []
         config = self._async_running_clients[self.hub_devices[targetId].address].config
         for device in config["device"]:
+            self.logger.threaddebug(f"deviceListGenerator: Adding device = '{device['id']}', label = '{device['label']}'")
             retList.append((device['id'], device["label"]))
         retList.sort(key=lambda tup: tup[1])
-        self.logger.debug(f"deviceListGenerator: {len(retList):d} items returned")
+        self.logger.debug(f"deviceListGenerator: {len(retList)} items returned")
         return retList
 
     def commandGroupListGenerator(self, filter, valuesDict, typeId, targetId):
@@ -331,6 +315,7 @@ class Plugin(indigo.PluginBase):
             tempList = []
             for activity in config["activity"]:  # build a list of all groups found in all activities
                 for group in activity["controlGroup"]:
+                    self.logger.threaddebug(f"commandGroupListGenerator: Adding name = '{group['name']}', label = '{group['label']}'")
                     tempList.append((group["name"], group["name"]))
             retList = list(set(tempList))  # get rid of the dupes
 
@@ -338,6 +323,7 @@ class Plugin(indigo.PluginBase):
             tempList = []
             for activity in config["activity"]:  # build a list of all groups found in all activities
                 for group in activity["controlGroup"]:
+                    self.logger.threaddebug(f"commandGroupListGenerator: Adding name = '{group['name']}', label = '{group['name']}'")
                     tempList.append((group["name"], group["name"]))
             retList = list(set(tempList))  # get rid of the dupes
 
@@ -348,13 +334,14 @@ class Plugin(indigo.PluginBase):
                 if device["id"] != valuesDict['device']:
                     continue
                 for group in device["controlGroup"]:
+                    self.logger.threaddebug(f"commandGroupListGenerator: Adding name = '{group['name']}', label = '{group['name']}'")
                     retList.append((group['name'], group["name"]))
 
         else:
             self.logger.debug(f"commandGroupListGenerator Error: Unknown typeId ({typeId})")
 
         retList.sort(key=lambda tup: tup[1])
-        self.logger.debug(f"commandGroupListGenerator: {len(retList):d} items returned")
+        self.logger.debug(f"commandGroupListGenerator: {len(retList)} items returned")
         return retList
 
     def commandListGenerator(self, filter, valuesDict, typeId, targetId):
@@ -372,7 +359,7 @@ class Plugin(indigo.PluginBase):
                     if group["name"] != valuesDict['group']:
                         continue  # build a list of all functions found in the specified controlGroup,
                     for function in group["function"]:  # for all activities (combined)
-                        self.logger.debug(f"commandListGenerator: Adding name = '{function['name']}', label = '{function['label']}'")
+                        self.logger.threaddebug(f"commandListGenerator: Adding name = '{function['name']}', label = '{function['label']}'")
                         tempList.append((function["name"], function['name']))
             retList = list(set(tempList))  # get rid of the dupes
 
@@ -384,7 +371,7 @@ class Plugin(indigo.PluginBase):
                     if group["name"] != valuesDict['group']:
                         continue  # build a list of all functions found in the specified controlGroup,
                     for function in group["function"]:  # for all activities (combined)
-                        self.logger.debug(f"commandListGenerator: Adding name = '{function['name']}', label = '{function['label']}'")
+                        self.logger.threaddebug(f"commandListGenerator: Adding name = '{function['name']}', label = '{function['label']}'")
                         tempList.append((function["name"], function['name']))
             retList = list(set(tempList))  # get rid of the dupes
 
@@ -397,7 +384,7 @@ class Plugin(indigo.PluginBase):
                     if group["name"] != valuesDict['group']:
                         continue
                     for function in group['function']:
-                        self.logger.debug(f"commandListGenerator: Adding name = '{function['name']}', label = '{function['label']}'")
+                        self.logger.threaddebug(f"commandListGenerator: Adding name = '{function['name']}', label = '{function['label']}'")
                         retList.append((function['name'], function["label"]))
 
         else:
@@ -418,12 +405,24 @@ class Plugin(indigo.PluginBase):
         errorDict = indigo.Dict()
 
         if typeId == "startActivity":
-            self.logger.debug("validateActionConfigUi startActivity")
+            self.logger.debug(f"validateActionConfigUi startActivity, activity = {valuesDict['activity']}")
+            if valuesDict['activity'] == "":
+                errorDict["activity"] = "Activity must be selected"
 
         elif typeId == "sendCurrentActivityCommand":
             self.logger.debug(
                 f"validateActionConfigUi sendCurrentActivityCommand, group = {valuesDict['group']}, command = {valuesDict['command']}")
 
+            if valuesDict['group'] == "":
+                errorDict["group"] = "Command Group must be selected"
+            if valuesDict['command'] == "":
+                errorDict["command"] = "Command must be selected"
+
+        elif typeId == "sendActivityCommand":
+            self.logger.debug(
+                f"validateActionConfigUi sendActivityCommand, activity = {valuesDict['activity']}, group = {valuesDict['group']}, command = {valuesDict['command']}")
+            if valuesDict['activity'] == "":
+                errorDict["activity"] = "Activity must be selected"
             if valuesDict['group'] == "":
                 errorDict["group"] = "Command Group must be selected"
             if valuesDict['command'] == "":
@@ -459,8 +458,6 @@ class Plugin(indigo.PluginBase):
 
     def _run_async_thread(self):
         self.logger.debug("_run_async_thread starting")
-        self._event_loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self._event_loop)
         self._event_loop.create_task(self._async_start())
         # add additional Tasks here as needed
         self._event_loop.run_until_complete(self._async_stop())
@@ -479,11 +476,16 @@ class Plugin(indigo.PluginBase):
     ########################################
 
     def message_handler(self, message):
-        self.logger.threaddebug(f"HubClient.messageHandler: {message}")
+        self.logger.threaddebug(f"messageHandler: {message}")
 
         hub_device = indigo.devices[message['device_id']]
+        try:
+            message_type = message['type']
+        except KeyError:
+            self.logger.threaddebug(f"{hub_device.name}: ignoring message has no type: {message}")
+            return
 
-        if message['type'] == "automation.state?notify":
+        if message_type == "automation.state?notify":
             key = list(message['data'])[0]
             data = message['data'][key]
             self.logger.debug(f"{hub_device.name}: Event automation notify, device: {key}, status: {data['status']}, brightness: {data['brightness']}, on: {data['on']}")
@@ -499,7 +501,7 @@ class Plugin(indigo.PluginBase):
             indigo.server.broadcastToSubscribers("automationNotification", broadcastDict)
             self.triggerCheck(hub_device, "automationNotification")
 
-        if message['type'] == "harmony.engine?startActivityFinished":
+        elif message_type == "harmony.engine?startActivityFinished":
             self.logger.debug(f"{hub_device.name}: Event startActivityFinished, activityId = {message['data']['activityId']}, errorCode = {message['data']['errorCode']}, errorString = {message['data']['errorString']}")
             config = self._async_running_clients[hub_device.address].config
             for activity in config["activity"]:
@@ -514,7 +516,7 @@ class Plugin(indigo.PluginBase):
                     break
             self.triggerCheck(hub_device, "activityFinishedNotification")
 
-        if message['type'] == "connect.stateDigest?notify":
+        elif message_type == "connect.stateDigest?notify":
             self.logger.debug(f"{hub_device.name}: Event activityNotification, activityId = {message['data']['activityId']}, activityStatus = {message['data']['activityStatus']}")
             stateList = [{'key': 'notifyActivityId', 'value': message['data']['activityId']},
                          {'key': 'notifyActivityStatus', 'value': message['data']['activityStatus']}
@@ -523,6 +525,9 @@ class Plugin(indigo.PluginBase):
             broadcastDict = {'notifyActivityId': message['data']['activityId'], 'notifyActivityStatus': message['data']['activityStatus'], 'hubID': str(hub_device.id)}
             indigo.server.broadcastToSubscribers(u"activityNotification", broadcastDict)
             self.triggerCheck(hub_device, "activityNotification")
+
+        else:
+            self.logger.threaddebug(f"{hub_device.name}: ignoring message with unknown type: {message_type}")
 
     async def _async_start_device(self, device):
         self.logger.debug(f"{device.name}: _async_start_device creating client")
@@ -559,7 +564,7 @@ class Plugin(indigo.PluginBase):
 
     async def show_config(self, client):
         if client.config:
-            self.logger.info(f"HUB: {client.name}\n{json.dumps(client.json_config, sort_keys=True, indent=4)}")
+            self.logger.info(f"HUB: {client.name}\n{json.dumps(client.config, sort_keys=True, indent=4)}")
         else:
             self.logger.warning(f"HUB: {client.name} There was a problem retrieving the configuration")
 
@@ -569,55 +574,23 @@ class Plugin(indigo.PluginBase):
             return
 
         status = await client.start_activity(activity_id)
-        if status[0]:
-            self.logger.debug(f"HUB: {client.name} Started Activity {args.activity}")
-        else:
-            self.logger.debug(f"HUB: {client.name} Activity start failed: {status[1]}")
+        self.logger.debug(f"HUB: {client.name} Start activity {activity_id} returned {status}")
 
     async def power_off(self, client):
         status = await client.power_off()
-        if status:
-            self.logger.debug(f"HUB: {client.name} Powered Off")
-        else:
-            self.logger.debug(f"HUB: {client.name} Power off failed")
+        self.logger.debug(f"HUB: {client.name} Power Off returned {status}")
 
-    async def send_command(self, client, args):
-        device_id = None
-        if args.device_id.isdigit():
-            if client.get_device_name(int(args.device_id)):
-                device_id = args.device_id
-
-        if device_id is None:
-            device_id = client.get_device_id(str(args.device_id).strip())
-
-        if device_id is None:
-            self.logger.debug(f"HUB: {client.name} Device {args.device_id} is invalid.")
-            return
-
+    async def send_command(self, client, device_id, command, delay=0):
         snd_cmd = SendCommandDevice(
             device=device_id,
-            command=args.command,
-            delay=args.hold_secs)
-
-        snd_cmd_list = []
-        for _ in range(args.repeat_num):
-            snd_cmd_list.append(snd_cmd)
-            if args.delay_secs > 0:
-                snd_cmd_list.append(args.delay_secs)
-
-        result_list = await client.send_commands(snd_cmd_list)
-
+            command=command,
+            delay=delay,
+        )
+        result_list = await client.send_commands(snd_cmd)
         if result_list:
             for result in result_list:
                 self.logger.debug(
                     f"HUB: {client.name} Sending of command {result.command.command} to device {result.command.device} failed with code {result.code}: {result.msg}")
         else:
-            self.logger.debug(f"HUB: {client.name} Command Sent")
+            self.logger.debug(f"{client.name}: '{command}' command sent")
 
-    async def change_channel(self, client, args):
-        status = await client.change_channel(args.channel)
-
-        if status:
-            self.logger.debug(f"HUB: {client.name} Changed to channel {args.channel}")
-        else:
-            self.logger.debug(f"HUB: {client.name} Change to channel {args.channel} failed")
