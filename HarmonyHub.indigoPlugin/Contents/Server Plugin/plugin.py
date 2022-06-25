@@ -2,10 +2,9 @@
 # -*- coding: utf-8 -*-
 ####################
 
-import time
 import json
 import logging
-
+import threading
 import asyncio
 
 try:
@@ -16,7 +15,19 @@ try:
 except ImportError:
     raise ImportError("'Required Python libraries missing.  Run 'pip3 install aioharmony' in Terminal window, then reload plugin.")
 
-kCurDevVersCount = 1  # current version of plugin devices
+class Listener(object):
+
+    def __init__(self, device, client, callback):
+        self.device_id = device.id
+        self.client_ip = client.ip_address
+        self.callback = callback
+        client.register_handler(handler=Handler(handler_obj=self.output_response, handler_name='output_response', once=False)) # noqa
+
+    def output_response(self, message):
+        message['device_id'] = self.device_id
+        message['client_ip'] = self.client_ip
+        self.callback(message)
+
 
 ################################################################################
 class Plugin(indigo.PluginBase):
@@ -27,59 +38,70 @@ class Plugin(indigo.PluginBase):
     def __init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs):
         indigo.PluginBase.__init__(self, pluginId, pluginDisplayName, pluginVersion, pluginPrefs)
 
-        pfmt = logging.Formatter('%(asctime)s.%(msecs)03d\t[%(levelname)8s] %(name)20s.%(funcName)-25s%(msg)s', datefmt='%Y-%m-%d %H:%M:%S')
+        pfmt = logging.Formatter('%(asctime)s.%(msecs)03d\t[%(levelname)8s] %(name)20s.%(funcName)-25s%(message)s', datefmt='%Y-%m-%d %H:%M:%S')
         self.plugin_file_handler.setFormatter(pfmt)
-        self.logLevel = int(self.pluginPrefs.get("logLevel", logging.INFO))
+        self.logLevel = int(pluginPrefs.get("logLevel", logging.INFO))
         self.indigo_log_handler.setLevel(self.logLevel)
         self.logger.debug(f"logLevel = {self.logLevel}")
-        self.pluginId = pluginId
-        self.hubDict = dict()
-        self.activityDict = dict()
+        self.protocol = pluginPrefs.get("protocol", WEBSOCKETS)
+
+        self.hub_devices = dict()
+        self.activity_devices = dict()
         self.triggers = {}
 
+        self._async_running_clients = dict()
+        self._event_loop = None
+        self._async_thread = None
+
+    def closedPrefsConfigUi(self, valuesDict, userCancelled):
+        if not userCancelled:
+            self.logLevel = int(valuesDict.get("logLevel", logging.INFO))
+            self.indigo_log_handler.setLevel(self.logLevel)
+            self.logger.debug(f"logLevel = {self.logLevel}")
+            if valuesDict['protocol'] != self.protocol:
+                self.logger.warning("Protocol change requires plugin restart!")
+
     def startup(self):
-        self.logger.info("Starting Harmony Hub")
-        indigo.server.subscribeToBroadcast(self.pluginId, "activityFinishedNotification", "activityFinishedHandler")
+        self.logger.info(f"Harmony Hub starting")
 
-    def shutdown(self):
-        self.logger.info("Shutting down Harmony Hub")
+        # async thread is used instead of concurrent thread
+        self._async_thread = threading.Thread(target=self._run_async_thread)
+        self._async_thread.start()
 
-    def activityFinishedHandler(self, broadcastDict):
-        self.logger.debug(f"activityFinishedHandler: {broadcastDict['currentActivityName']} ({broadcastDict['currentActivityNum']}) on hub {broadcastDict['hubID']}")
+    def shutdown(self):  # noqa
+        self.logger.info(f"Harmony Hub stopping")
 
-        for activityDevice in self.activityDict.values():
-            self.logger.debug(f"Checking activity: {activityDevice.pluginProps['activity']}, hub: {activityDevice.pluginProps['hubID']}")
+    def deviceStartComm(self, device):
+        self.logger.debug(f"{device.name}: Starting {device.deviceTypeId} device ({device.id})")
 
-            if broadcastDict['hubID'] == activityDevice.pluginProps['hubID']:
-                if broadcastDict['currentActivityNum'] == activityDevice.pluginProps['activity']:
-                    activityDevice.updateStateOnServer(key="onOffState", value=True)
-                else:
-                    activityDevice.updateStateOnServer(key="onOffState", value=False)
+        if device.deviceTypeId == "harmonyHub":
+            self._event_loop.create_task(self._async_start_device(device))
+            self.hub_devices[device.id] = device
+        elif device.deviceTypeId == "activityDevice":
+            self.activity_devices[device.id] = device
+        else:
+            self.logger.error(f"{device.name}: deviceStartComm - Unknown device type: {device.deviceTypeId}")
 
-    def runConcurrentThread(self):
-        try:
-            while True:
-                for devID, hub in self.hubDict.items():  # try to make sure all hub devices are connected
-                    dev = indigo.devices[devID]
-                    try:
-                        if not hub.ready:
-                            hub.connect(dev)
-                    except (Exception,):
-                        self.logger.warning(f"{dev.name}: Hub communication error, check XMPP setting.")
-                        indigo.device.enable(dev, False)
-                self.sleep(60.0)
-        except self.StopThread:
-            pass
+    def deviceStopComm(self, device):
+        self.logger.debug(f"{device.name}: Stopping")
+
+        if device.deviceTypeId == "harmonyHub":
+            self._event_loop.create_task(self._async_stop_device(device.address))
+            self.hub_devices.pop(device.id, None)
+        elif device.deviceTypeId == "activityDevice":
+            self.hub_devices.pop(device.id, None)
+        else:
+            self.logger.error(f"{device.name}: deviceStopComm - Unknown device type: {device.deviceTypeId}")
 
     ####################
 
     def triggerStartProcessing(self, trigger):
-        self.logger.debug(f"Adding Trigger {trigger.name} ({trigger.id:d}) - {trigger.pluginTypeId}")
+        self.logger.debug(f"Adding Trigger {trigger.name} ({trigger.id}) - {trigger.pluginTypeId}")
         assert trigger.id not in self.triggers
         self.triggers[trigger.id] = trigger
 
     def triggerStopProcessing(self, trigger):
-        self.logger.debug(f"Removing Trigger {trigger.name} ({trigger.id:d})")
+        self.logger.debug(f"Removing Trigger {trigger.name} ({trigger.id})")
         assert trigger.id in self.triggers
         del self.triggers[trigger.id]
 
@@ -87,105 +109,38 @@ class Plugin(indigo.PluginBase):
 
         # Execute the trigger if it's the right type and for the right hub device
 
-        for triggerId, trigger in sorted(self.triggers.iteritems()):
-            self.logger.debug(f"Checking Trigger {trigger.name} ({trigger.id}), Type: {trigger.pluginTypeId}")
+        for triggerId, trigger in sorted(self.triggers.items()):
+            self.logger.threaddebug(f"\tChecking Trigger {trigger.name} ({trigger.id}), Type: {trigger.pluginTypeId}")
             if trigger.pluginProps["hubID"] != str(device.id):
-                self.logger.debug(f"\tSkipping Trigger {trigger.name} ({trigger.id}), wrong hub: {device.id}")
+                self.logger.threaddebug(f"\t\tSkipping Trigger {trigger.name} ({trigger.id}), wrong hub: {device.id}")
             else:
                 if trigger.pluginTypeId != eventType:
-                    self.logger.debug(f"\tSkipping Trigger {trigger.name} ({trigger.id}), wrong type: {eventType}")
+                    self.logger.threaddebug(f"\t\tSkipping Trigger {trigger.name} ({trigger.id}), wrong type: {eventType}")
                 else:
-                    self.logger.debug(f"\tExecuting Trigger {trigger.name} ({trigger.id}) on Device {device.name} ({device.id})")
+                    self.logger.threaddebug(f"\t\tExecuting Trigger {trigger.name} ({trigger.id}) on Device {device.name} ({device.id})")
                     indigo.trigger.execute(trigger)
 
     ########################################
-    def closedPrefsConfigUi(self, valuesDict, userCancelled):
-        if not userCancelled:
-            self.logLevel = int(valuesDict.get("logLevel", logging.INFO))
-            self.indigo_log_handler.setLevel(self.logLevel)
-            self.logger.debug(f"logLevel = {self.logLevel}")
 
-    ########################################
-    # Called for each enabled Device belonging to plugin
-    #
-    def deviceStartComm(self, device):
-        self.logger.debug(f'Called deviceStartComm(self, device): {device.name} ({device.id})')
-
-        instanceVers = int(device.pluginProps.get('devVersCount', 0))
-        self.logger.debug(f"{device.name}: Device Current Version = {instanceVers}")
-
-        if instanceVers >= kCurDevVersCount:
-            self.logger.debug(f"{device.name}: Device Version is up to date")
-
-        elif instanceVers < kCurDevVersCount:
-            newProps = device.pluginProps
-            newProps["devVersCount"] = kCurDevVersCount
-
-            device.replacePluginPropsOnServer(newProps)
-            device.stateListOrDisplayStateIdChanged()
-            self.logger.debug(f"deviceStartComm: Updated {device.name} to version {kCurDevVersCount}")
-        else:
-            self.logger.error(f"Unknown device version: {instanceVers} for device {device.name}")
-
-        if device.deviceTypeId == "harmonyHub":
-
-            if device.id not in self.hubDict:
-                self.logger.debug(f"{device.name}: Starting harmonyHub device ({device.id})")
-                self.hubDict[device.id] = HubClient(self, device)
-
-            else:
-                self.logger.error(f"{device.name}: Duplicate Device ID")
-
-        elif device.deviceTypeId == "activityDevice":
-            self.activityDict[device.id] = device
-
-        else:
-            self.logger.error(f"{device.name}: deviceStartComm - Unknown device type: {device.deviceTypeId}")
-
-    ########################################
-    # Terminate communication with servers
-    #
-    def deviceStopComm(self, device):
-        self.logger.debug(f'Called deviceStopComm(self, device): {device.name} ({device.id})')
-
-        if device.deviceTypeId == "harmonyHub":
-            try:
-                hubClient = self.hubDict[device.id]
-                self.hubDict.pop(device.id, None)
-                hubClient.client.disconnect(send_close=True)
-            except (Exception,):
-                pass
-
-        elif device.deviceTypeId == "activityDevice":
-            try:
-                self.hubDict.pop(device.id, None)
-            except (Exception,):
-                pass
-
-        else:
-            self.logger.error(f"{device.name}: deviceStopComm - Unknown device type: {device.deviceTypeId}")
-
-    ########################################
-
-    def actionControlDimmerRelay(self, action, dev):
-        self.logger.debug(f"{dev.name}: actionControlDevice: action: {action.deviceAction}, activity: {dev.pluginProps['activity']}")
-
-        hubID = dev.pluginProps['hubID']
+    def actionControlDimmerRelay(self, action, device):
+        hubID = device.pluginProps['hubID']
+        activityID = device.pluginProps['activity']
+        self.logger.debug(f"{device.name}: actionControlDevice: action: {action.deviceAction}, activity: {activityID}")
 
         if action.deviceAction == indigo.kDeviceAction.TurnOn:
-            self.doActivity(hubID, dev.pluginProps['activity'])
+            self.doActivity(hubID, activityID)
 
         elif action.deviceAction == indigo.kDeviceAction.TurnOff:
             self.doActivity(hubID, "-1")
 
         elif action.deviceAction == indigo.kDeviceAction.Toggle:
-            if dev.onState:
+            if device.onState:
                 self.doActivity(hubID, "-1")
             else:
-                self.doActivity(hubID, dev.pluginProps['activity'])
+                self.doActivity(hubID, activityID)
 
         else:
-            self.logger.error(f"{dev.name}: actionControlDevice: Unsupported action requested: {action}")
+            self.logger.error(f"{device.name}: actionControlDevice: Unsupported action requested: {action}")
 
     ########################################
     # Plugin Actions object callbacks
@@ -197,26 +152,9 @@ class Plugin(indigo.PluginBase):
         self.doActivity(pluginAction.deviceId, "-1")
 
     def doActivity(self, deviceId, activityID):
-        hubDevice = indigo.devices[int(deviceId)]
-        if not hubDevice.enabled:
-            self.logger.error(f"{hubDevice.name}: Can't send Activity commands when hub is not enabled")
-            return
-        hubClient = self.hubDict[hubDevice.id]
-        self.logger.debug(f"{ hubDevice.name}:Start Activity - " + activityID)
-
-        retries = 0
-        while retries < 3:
-            try:
-                hubClient.client.start_activity(int(activityID))
-            except sleekxmpp.exceptions.IqTimeout:
-                self.logger.debug(f"{ hubDevice.name}:Time out in hub.client.startActivity")
-                retries += 1
-            except sleekxmpp.exceptions.IqError:
-                self.logger.debug(f"{ hubDevice.name}:IqError in hub.client.startActivity")
-                return
-            else:
-                hubClient.current_activity_id = activityID
-                return
+        self.logger.debug(f"Sending activity {activityID} to hub device {deviceId}")
+        client = self._async_running_clients[self.hub_devices[deviceId].address]
+        self._event_loop.create_task(self.start_activity(client, int(activityID)))
 
     def findDeviceForCommand(self, configData, commandName, activityID):
         self.logger.debug(f'findDeviceForCommand: looking for {commandName} in {activityID}')
@@ -254,7 +192,7 @@ class Plugin(indigo.PluginBase):
                             self.logger.debug(f'findCommandForDevice:       function {function["name"]}, devCommand = {devCommand}')
                             return devCommand
             else:
-                self.logger.debug(f'findDeviceForCommand: skipping {device["label"]}')
+                self.logger.debug(f'findCommandForDevice: skipping {device["label"]}')
 
         self.logger.debug('findCommandForDevice: command not found')
         return None
@@ -264,17 +202,17 @@ class Plugin(indigo.PluginBase):
         if not hubDevice.enabled:
             self.logger.debug(f"{ hubDevice.name}: Can't send Activity commands when hub is not enabled")
             return
-        hubClient = self.hubDict[hubDevice.id]
-        if int(hubClient.current_activity_id) <= 0:
-            self.logger.debug(f"{ hubDevice.name} Can't send Activity commands when no Activity is running")
+        client = self._async_running_clients[self.hub_devices[deviceId].address]
+        if int(client.current_activity_id) <= 0:
+            self.logger.debug(f"{hubDevice.name} Can't send Activity commands when no Activity is running")
             return
 
         commandName = pluginAction.props["command"]
         if commandName is None:
-            self.logger.error(f"{ hubDevice.name}: sendCurrentActivityCommand: command property invalid in pluginProps")
+            self.logger.error(f"{hubDevice.name}: sendCurrentActivityCommand: command property invalid in pluginProps")
             return
 
-        (device, devCommand) = self.findDeviceForCommand(hubClient.config, commandName, hubClient.current_activity_id)
+        (device, devCommand) = self.findDeviceForCommand(hubClient.config, commandName, client.current_activity_id)
 
         if device is None:
             self.logger.warning(f"{ hubDevice.name}: sendCurrentActivityCommand: No command '{commandName}' in current activity")
@@ -282,7 +220,7 @@ class Plugin(indigo.PluginBase):
 
         self.logger.debug(f"{hubDevice.name}: sendCurrentActivityCommand: {commandName} ({devCommand}) to {device}")
         try:
-            hubClient.client.send_command(device, devCommand)
+            client.client.send_command(device, devCommand)
         except sleekxmpp.exceptions.IqTimeout:
             self.logger.debug(f"{ hubDevice.name}: Time out in hub.client.send_command")
         except sleekxmpp.exceptions.IqError:
@@ -295,7 +233,7 @@ class Plugin(indigo.PluginBase):
         if not hubDevice.enabled:
             self.logger.debug(f"{ hubDevice.name}: Can't send Activity commands when hub is not enabled")
             return
-        hub = self.hubDict[hubDevice.id]
+        hub = self.hub_devices[hubDevice.id]
         if int(hub.current_activity_id) <= 0:
             self.logger.debug(f"{ hubDevice.name}: Can't send Activity commands when no Activity is running")
             return
@@ -320,7 +258,7 @@ class Plugin(indigo.PluginBase):
         if not hubDevice.enabled:
             self.logger.debug(f"{ hubDevice.name}: Can't send commands when hub is not enabled")
             return
-        hubClient = self.hubDict[hubDevice.id]
+        hubClient = self.hub_devices[hubDevice.id]
 
         commandName = pluginAction.props["command"]
         device = pluginAction.props["device"]
@@ -342,33 +280,8 @@ class Plugin(indigo.PluginBase):
 
     def dumpConfig(self, valuesDict, typeId):
         hubID = int(valuesDict['hubID'])
-        config = self.hubDict[hubID].config
-        self.logger.info(f"\n{json.dumps(config, sort_keys=True, indent=4, separators=(',', ': '))}")
-        return True, valuesDict
-
-    def dumpFormattedConfig(self, valuesDict, typeId):
-        hubID = int(valuesDict['hubID'])
-        config = self.hubDict[hubID].config
-        for activity in config["activity"]:
-            if activity["id"] == "-1":  # skip Power Off
-                continue
-            self.logger.info(u"")
-            self.logger.info(
-                f"Activity: {activity['label']}, id: {activity['id']}, order: {activity['activityOrder']:d}, type: {activity['type']}, isAVActivity: {str(activity['isAVActivity'])}, isTuningDefault: {str(activity['isTuningDefault'])}")
-            for group in activity["controlGroup"]:
-                self.logger.info(f"    Control Group {group['name']}:")
-                for function in group['function']:
-                    self.logger.info(f"        Function {function['name']}: label = '{function['label']}', action: {function['action']}")
-
-        for device in config["device"]:
-            self.logger.info(u"")
-            self.logger.info(
-                f"Device: {device['label']}, id: {device['id']}, type: {device['type']}, Manufacturer: {device['manufacturer']}, Model: {device['model']}")
-            for group in device["controlGroup"]:
-                self.logger.info(f"    Control Group {group['name']}:")
-                for function in group['function']:
-                    self.logger.info(f"        Function {function['name']}: label = '{function['label']}', action: {function['action']}")
-
+        hub_dev = indigo.devices[hubID]
+        self._event_loop.create_task(self.show_config(self._async_running_clients[hub_dev.address]))
         return True, valuesDict
 
     ########################################
@@ -386,12 +299,12 @@ class Plugin(indigo.PluginBase):
                 targetId = int(valuesDict["hubID"])
 
         try:
-            config = self.hubDict[targetId].config
+            config = self._async_running_clients[self.hub_devices[targetId].address].config
         except (Exception,):
-            self.logger.error(f"activityListGenerator: targetId {targetId} not in hubDict")
+            self.logger.error(f"activityListGenerator: targetId {targetId} not in hub list")
             return retList
 
-        for activity in config["activity"]:
+        for activity in config.get('activity', []):
             if activity['id'] != "-1":
                 retList.append((activity['id'], activity["label"]))
         retList.sort(key=lambda tup: tup[1])
@@ -401,7 +314,7 @@ class Plugin(indigo.PluginBase):
     def deviceListGenerator(self, filter, valuesDict, typeId, targetId):
         self.logger.debug(f"deviceListGenerator: typeId = {typeId}, targetId = {targetId}")
         retList = []
-        config = self.hubDict[targetId].config
+        config = self._async_running_clients[self.hub_devices[targetId].address].config
         for device in config["device"]:
             retList.append((device['id'], device["label"]))
         retList.sort(key=lambda tup: tup[1])
@@ -412,9 +325,16 @@ class Plugin(indigo.PluginBase):
         self.logger.debug(f"commandGroupListGenerator: typeId = {typeId}, targetId = {targetId}")
         retList = []
 
-        config = self.hubDict[targetId].config
+        config = self._async_running_clients[self.hub_devices[targetId].address].config
 
         if typeId == "sendCurrentActivityCommand":
+            tempList = []
+            for activity in config["activity"]:  # build a list of all groups found in all activities
+                for group in activity["controlGroup"]:
+                    tempList.append((group["name"], group["name"]))
+            retList = list(set(tempList))  # get rid of the dupes
+
+        elif typeId == "sendActivityCommand":
             tempList = []
             for activity in config["activity"]:  # build a list of all groups found in all activities
                 for group in activity["controlGroup"]:
@@ -442,9 +362,21 @@ class Plugin(indigo.PluginBase):
         if not valuesDict:
             return retList
 
-        config = self.hubDict[targetId].config
+        config = self._async_running_clients[self.hub_devices[targetId].address].config
 
         if typeId == "sendCurrentActivityCommand":
+            self.logger.debug(f"commandListGenerator: typeId = {typeId}, targetId = {targetId}, group = {valuesDict['group']}")
+            tempList = []
+            for activity in config["activity"]:
+                for group in activity["controlGroup"]:
+                    if group["name"] != valuesDict['group']:
+                        continue  # build a list of all functions found in the specified controlGroup,
+                    for function in group["function"]:  # for all activities (combined)
+                        self.logger.debug(f"commandListGenerator: Adding name = '{function['name']}', label = '{function['label']}'")
+                        tempList.append((function["name"], function['name']))
+            retList = list(set(tempList))  # get rid of the dupes
+
+        elif typeId == "sendActivityCommand":
             self.logger.debug(f"commandListGenerator: typeId = {typeId}, targetId = {targetId}, group = {valuesDict['group']}")
             tempList = []
             for activity in config["activity"]:
@@ -517,8 +449,165 @@ class Plugin(indigo.PluginBase):
 
     def pickHub(self, filter=None, valuesDict=None, typeId=0, targetId=0):
         retList = []
-        for did, hubClient in self.hubDict.items():
+        for did, hubClient in self.hub_devices.items():
             hubDevice = indigo.devices[did]
             retList.append((did, hubDevice.name))
         retList.sort(key=lambda tup: tup[1])
         return retList
+
+    ########################################
+
+    def _run_async_thread(self):
+        self.logger.debug("_run_async_thread starting")
+        self._event_loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(self._event_loop)
+        self._event_loop.create_task(self._async_start())
+        # add additional Tasks here as needed
+        self._event_loop.run_until_complete(self._async_stop())
+        self._event_loop.close()
+
+    async def _async_start(self):
+        self.logger.debug("_async_start")
+
+    async def _async_stop(self):
+        self.logger.debug("_async_stop waiting")
+        while True:
+            await asyncio.sleep(1.0)
+            if self.stopThread:
+                break
+
+    ########################################
+
+    def message_handler(self, message):
+        self.logger.threaddebug(f"HubClient.messageHandler: {message}")
+
+        hub_device = indigo.devices[message['device_id']]
+
+        if message['type'] == "automation.state?notify":
+            key = list(message['data'])[0]
+            data = message['data'][key]
+            self.logger.debug(f"{hub_device.name}: Event automation notify, device: {key}, status: {data['status']}, brightness: {data['brightness']}, on: {data['on']}")
+            stateList = [{'key': 'lastAutomationDevice', 'value': key},
+                         {'key': 'lastAutomationStatus', 'value': data['status']},
+                         {'key': 'lastAutomationBrightness', 'value': str(data['brightness'])},
+                         {'key': 'lastAutomationOnState', 'value': str(data['on'])}
+                         ]
+            hub_device.updateStatesOnServer(stateList)
+            broadcastDict = {'lastAutomationDevice': key, 'lastAutomationStatus': data['status'],
+                             'lastAutomationBrightness': data['brightness'], 'lastAutomationOnState': data['on'],
+                             'hubID': str(hub_device.id)}
+            indigo.server.broadcastToSubscribers("automationNotification", broadcastDict)
+            self.triggerCheck(hub_device, "automationNotification")
+
+        if message['type'] == "harmony.engine?startActivityFinished":
+            self.logger.debug(f"{hub_device.name}: Event startActivityFinished, activityId = {message['data']['activityId']}, errorCode = {message['data']['errorCode']}, errorString = {message['data']['errorString']}")
+            config = self._async_running_clients[hub_device.address].config
+            for activity in config["activity"]:
+                if message['data']['activityId'] == activity['id']:
+                    stateList = [{'key': 'currentActivityNum', 'value': activity['id']},
+                                 {'key': 'currentActivityName', 'value': activity['label']}
+                                 ]
+                    hub_device.updateStatesOnServer(stateList)
+                    broadcastDict = {'currentActivityNum': activity[u'id'], 'currentActivityName': activity['label'],
+                                     'hubID': str(hub_device.id)}
+                    indigo.server.broadcastToSubscribers(u"activityFinishedNotification", broadcastDict)
+                    break
+            self.triggerCheck(hub_device, "activityFinishedNotification")
+
+    async def _async_start_device(self, device):
+        self.logger.debug(f"{device.name}: _async_start_device creating client")
+        client = HarmonyAPI(ip_address=device.address, protocol=self.protocol)
+        connected = False
+
+        self.logger.debug(f"{device.name}: _async_start_device connecting client")
+        try:
+            connected = await client.connect()
+        except ConnectionRefusedError as e:
+            self.logger.debug(f"{device.name}: connect exception: {e}.")
+            return
+
+        if not connected:
+            self.logger.debug(f"{device.name}: Failed to connect.")
+            return
+
+        self.logger.debug(f"{device.name}: Connected to HUB {client.name} ({client.ip_address}) using {client.protocol}")
+        self._async_running_clients[device.address] = client
+
+        self.logger.debug(f"{device.name}: Starting listener")
+        listener = Listener(device, client, self.message_handler)
+
+    async def _async_stop_device(self, ip_address):
+        hub_client = self._async_running_clients[ip_address]
+        if not hub_client:
+            return
+
+        self.logger.debug(f"{hub_client.name} HUB: Closing connection")
+        try:
+            await asyncio.wait_for(hub_client.close(), timeout=5)
+        except aioharmony.exceptions.TimeOut:
+            self.logger.debug(f"{hub_client.name} HUB: Timeout trying to close connection.")
+
+    async def show_config(self, client):
+        if client.config:
+            self.logger.info(f"HUB: {client.name}\n{json.dumps(client.json_config, sort_keys=True, indent=4)}")
+        else:
+            self.logger.warning(f"HUB: {client.name} There was a problem retrieving the configuration")
+
+    async def start_activity(self, client, activity_id=None):
+        if activity_id is None:
+            self.logger.debug(f"HUB: {client.name} No activity provided to start")
+            return
+
+        status = await client.start_activity(activity_id)
+        if status[0]:
+            self.logger.debug(f"HUB: {client.name} Started Activity {args.activity}")
+        else:
+            self.logger.debug(f"HUB: {client.name} Activity start failed: {status[1]}")
+
+    async def power_off(self, client):
+        status = await client.power_off()
+        if status:
+            self.logger.debug(f"HUB: {client.name} Powered Off")
+        else:
+            self.logger.debug(f"HUB: {client.name} Power off failed")
+
+    async def send_command(self, client, args):
+        device_id = None
+        if args.device_id.isdigit():
+            if client.get_device_name(int(args.device_id)):
+                device_id = args.device_id
+
+        if device_id is None:
+            device_id = client.get_device_id(str(args.device_id).strip())
+
+        if device_id is None:
+            self.logger.debug(f"HUB: {client.name} Device {args.device_id} is invalid.")
+            return
+
+        snd_cmd = SendCommandDevice(
+            device=device_id,
+            command=args.command,
+            delay=args.hold_secs)
+
+        snd_cmd_list = []
+        for _ in range(args.repeat_num):
+            snd_cmd_list.append(snd_cmd)
+            if args.delay_secs > 0:
+                snd_cmd_list.append(args.delay_secs)
+
+        result_list = await client.send_commands(snd_cmd_list)
+
+        if result_list:
+            for result in result_list:
+                self.logger.debug(
+                    f"HUB: {client.name} Sending of command {result.command.command} to device {result.command.device} failed with code {result.code}: {result.msg}")
+        else:
+            self.logger.debug(f"HUB: {client.name} Command Sent")
+
+    async def change_channel(self, client, args):
+        status = await client.change_channel(args.channel)
+
+        if status:
+            self.logger.debug(f"HUB: {client.name} Changed to channel {args.channel}")
+        else:
+            self.logger.debug(f"HUB: {client.name} Change to channel {args.channel} failed")

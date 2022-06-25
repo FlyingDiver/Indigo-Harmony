@@ -1,6 +1,13 @@
 <?xml version="1.0"?>
 <PluginConfig>
     <SupportURL>http://forums.indigodomo.com/viewforum.php?f=211</SupportURL>
+    <Field id="protocol" type="menu" defaultValue="WEBSOCKETS">
+        <Label>Hub Communication Protocol:</Label>
+        <List>
+            <Option value="WEBSOCKETS">Websockets</Option>
+            <Option value="XMPP">XMPP</Option>
+        </List>
+    </Field>            
     <Field id="logLevel" type="menu" defaultValue="20">
         <Label>Event Logging Level:</Label>
         <List>
@@ -11,5 +18,5 @@
             <Option value="40">Error Messages</Option>
             <Option value="50">Critical Errors Only</Option>
         </List>
-    </Field>            
+    </Field>
 </PluginConfig>
