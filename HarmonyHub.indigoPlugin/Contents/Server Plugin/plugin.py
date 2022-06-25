@@ -198,44 +198,44 @@ class Plugin(indigo.PluginBase):
         return None
 
     def sendCurrentActivityCommand(self, pluginAction):
-        hubDevice = indigo.devices[pluginAction.deviceId]
-        if not hubDevice.enabled:
-            self.logger.debug(f"{ hubDevice.name}: Can't send Activity commands when hub is not enabled")
+        hub_device = indigo.devices[pluginAction.deviceId]
+        if not hub_device.enabled:
+            self.logger.debug(f"{ hub_device.name}: Can't send Activity commands when hub is not enabled")
             return
         client = self._async_running_clients[self.hub_devices[deviceId].address]
         if int(client.current_activity_id) <= 0:
-            self.logger.debug(f"{hubDevice.name} Can't send Activity commands when no Activity is running")
+            self.logger.debug(f"{hub_device.name} Can't send Activity commands when no Activity is running")
             return
 
         commandName = pluginAction.props["command"]
         if commandName is None:
-            self.logger.error(f"{hubDevice.name}: sendCurrentActivityCommand: command property invalid in pluginProps")
+            self.logger.error(f"{hub_device.name}: sendCurrentActivityCommand: command property invalid in pluginProps")
             return
 
         (device, devCommand) = self.findDeviceForCommand(hubClient.config, commandName, client.current_activity_id)
 
         if device is None:
-            self.logger.warning(f"{ hubDevice.name}: sendCurrentActivityCommand: No command '{commandName}' in current activity")
+            self.logger.warning(f"{ hub_device.name}: sendCurrentActivityCommand: No command '{commandName}' in current activity")
             return
 
-        self.logger.debug(f"{hubDevice.name}: sendCurrentActivityCommand: {commandName} ({devCommand}) to {device}")
+        self.logger.debug(f"{hub_device.name}: sendCurrentActivityCommand: {commandName} ({devCommand}) to {device}")
         try:
             client.client.send_command(device, devCommand)
         except sleekxmpp.exceptions.IqTimeout:
-            self.logger.debug(f"{ hubDevice.name}: Time out in hub.client.send_command")
+            self.logger.debug(f"{ hub_device.name}: Time out in hub.client.send_command")
         except sleekxmpp.exceptions.IqError:
-            self.logger.debug(f"{ hubDevice.name}: IqError in hub.client.send_command")
+            self.logger.debug(f"{ hub_device.name}: IqError in hub.client.send_command")
         except Exception as e:
-            self.logger.debug(f"{ hubDevice.name}: Error in hub.client.send_command: {e}")
+            self.logger.debug(f"{ hub_device.name}: Error in hub.client.send_command: {e}")
 
     def sendActivityCommand(self, pluginAction):
-        hubDevice = indigo.devices[pluginAction.deviceId]
-        if not hubDevice.enabled:
-            self.logger.debug(f"{ hubDevice.name}: Can't send Activity commands when hub is not enabled")
+        hub_device = indigo.devices[pluginAction.deviceId]
+        if not hub_device.enabled:
+            self.logger.debug(f"{ hub_device.name}: Can't send Activity commands when hub is not enabled")
             return
-        hub = self.hub_devices[hubDevice.id]
+        hub = self.hub_devices[hub_device.id]
         if int(hub.current_activity_id) <= 0:
-            self.logger.debug(f"{ hubDevice.name}: Can't send Activity commands when no Activity is running")
+            self.logger.debug(f"{ hub_device.name}: Can't send Activity commands when no Activity is running")
             return
 
         commandName = pluginAction.props["command"]
@@ -243,36 +243,36 @@ class Plugin(indigo.PluginBase):
         device = pluginAction.props["device"]
         devCommand = self.findCommandForDevice(hubClient.config, commandName, device)
 
-        self.logger.debug(f"{hubDevice.name}: sendActivityCommand: {commandName} ({devCommand}) to {device} for {activity}")
+        self.logger.debug(f"{hub_device.name}: sendActivityCommand: {commandName} ({devCommand}) to {device} for {activity}")
         try:
             hub.client.send_command(device, devCommand)
         except sleekxmpp.exceptions.IqTimeout:
-            self.logger.debug(f"{ hubDevice.name}: Time out in hub.client.send_command")
+            self.logger.debug(f"{ hub_device.name}: Time out in hub.client.send_command")
         except sleekxmpp.exceptions.IqError:
-            self.logger.debug(f"{ hubDevice.name}: IqError in hub.client.send_command")
+            self.logger.debug(f"{ hub_device.name}: IqError in hub.client.send_command")
         except Exception as e:
-            self.logger.debug(f"{ hubDevice.name}: Error in hub.client.send_command: {e}")
+            self.logger.debug(f"{ hub_device.name}: Error in hub.client.send_command: {e}")
 
     def sendDeviceCommand(self, pluginAction):
-        hubDevice = indigo.devices[pluginAction.deviceId]
-        if not hubDevice.enabled:
-            self.logger.debug(f"{ hubDevice.name}: Can't send commands when hub is not enabled")
+        hub_device = indigo.devices[pluginAction.deviceId]
+        if not hub_device.enabled:
+            self.logger.debug(f"{ hub_device.name}: Can't send commands when hub is not enabled")
             return
-        hubClient = self.hub_devices[hubDevice.id]
+        hubClient = self.hub_devices[hub_device.id]
 
         commandName = pluginAction.props["command"]
         device = pluginAction.props["device"]
         devCommand = self.findCommandForDevice(hubClient.config, commandName, device)
 
-        self.logger.debug(f"{hubDevice.name}: sendDeviceCommand: {commandName} ({devCommand}) to {device}")
+        self.logger.debug(f"{hub_device.name}: sendDeviceCommand: {commandName} ({devCommand}) to {device}")
         try:
             hubClient.client.send_command(device, devCommand)
         except sleekxmpp.exceptions.IqTimeout:
-            self.logger.debug(f":{hubDevice.name} Time out in hub.client.send_command")
+            self.logger.debug(f":{hub_device.name} Time out in hub.client.send_command")
         except sleekxmpp.exceptions.IqError:
-            self.logger.debug(f":{hubDevice.name} IqError in hub.client.send_command")
+            self.logger.debug(f":{hub_device.name} IqError in hub.client.send_command")
         except Exception as e:
-            self.logger.debug(f":{hubDevice.name} Error in hub.client.send_command: {e}")
+            self.logger.debug(f":{hub_device.name} Error in hub.client.send_command: {e}")
 
     ########################################
     # Menu Methods
@@ -513,6 +513,16 @@ class Plugin(indigo.PluginBase):
                     indigo.server.broadcastToSubscribers(u"activityFinishedNotification", broadcastDict)
                     break
             self.triggerCheck(hub_device, "activityFinishedNotification")
+
+        if message['type'] == "connect.stateDigest?notify":
+            self.logger.debug(f"{hub_device.name}: Event activityNotification, activityId = {message['data']['activityId']}, activityStatus = {message['data']['activityStatus']}")
+            stateList = [{'key': 'notifyActivityId', 'value': message['data']['activityId']},
+                         {'key': 'notifyActivityStatus', 'value': message['data']['activityStatus']}
+                         ]
+            hub_device.updateStatesOnServer(stateList)
+            broadcastDict = {'notifyActivityId': message['data']['activityId'], 'notifyActivityStatus': message['data']['activityStatus'], 'hubID': str(hub_device.id)}
+            indigo.server.broadcastToSubscribers(u"activityNotification", broadcastDict)
+            self.triggerCheck(hub_device, "activityNotification")
 
     async def _async_start_device(self, device):
         self.logger.debug(f"{device.name}: _async_start_device creating client")
