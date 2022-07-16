@@ -13,7 +13,7 @@ try:
     from aioharmony.responsehandler import Handler
     from aioharmony.const import ClientCallbackType, WEBSOCKETS, XMPP
 except ImportError:
-    raise ImportError("'Required Python libraries missing.  Run 'pip3 install aioharmony' in Terminal window, then reload plugin.")
+    raise ImportError("'Required Python libraries missing.  Run 'pip3 install aioharmony' in Terminal window, then reload plugin. Xcode required!")
 
 class Listener(object):
 
@@ -80,7 +80,8 @@ class Plugin(indigo.PluginBase):
             self._event_loop.create_task(self._async_start_device(device))
             self.hub_devices[device.id] = device
         elif device.deviceTypeId == "activityDevice":
-            self.activity_devices[device.id] = device
+            self.activity_devices[device.id] = device.pluginProps['activity']
+
         else:
             self.logger.error(f"{device.name}: deviceStartComm - Unknown device type: {device.deviceTypeId}")
 
@@ -91,7 +92,7 @@ class Plugin(indigo.PluginBase):
             self._event_loop.create_task(self._async_stop_device(device.address))
             self.hub_devices.pop(device.id, None)
         elif device.deviceTypeId == "activityDevice":
-            self.hub_devices.pop(device.id, None)
+            self.activity_devices.pop(device.id, None)
         else:
             self.logger.error(f"{device.name}: deviceStopComm - Unknown device type: {device.deviceTypeId}")
 
@@ -156,7 +157,7 @@ class Plugin(indigo.PluginBase):
 
     def doActivity(self, deviceId, activityID):
         self.logger.debug(f"Sending activity {activityID} to hub device {deviceId}")
-        client = self._async_running_clients[self.hub_devices[deviceId].address]
+        client = self._async_running_clients[self.hub_devices[int(deviceId)].address]
         self._event_loop.create_task(self.start_activity(client, int(activityID)))
 
     ########################################
@@ -503,6 +504,16 @@ class Plugin(indigo.PluginBase):
 
         elif message_type == "harmony.engine?startActivityFinished":
             self.logger.debug(f"{hub_device.name}: Event startActivityFinished, activityId = {message['data']['activityId']}, errorCode = {message['data']['errorCode']}, errorString = {message['data']['errorString']}")
+
+            # update the activity devices
+            for deviceId, activityId in self.activity_devices.items():
+                device = indigo.devices[deviceId]
+                if activityId == message['data']['activityId']:
+                    device.updateStateOnServer(key='onOffState', value=True)
+                else:
+                    device.updateStateOnServer(key='onOffState', value=False)
+
+            # Update the hub's state and send the event to any subscribers
             config = self._async_running_clients[hub_device.address].config
             for activity in config["activity"]:
                 if message['data']['activityId'] == activity['id']:
@@ -593,4 +604,3 @@ class Plugin(indigo.PluginBase):
                     f"HUB: {client.name} Sending of command {result.command.command} to device {result.command.device} failed with code {result.code}: {result.msg}")
         else:
             self.logger.debug(f"{client.name}: '{command}' command sent")
-
