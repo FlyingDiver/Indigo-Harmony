@@ -1,17 +1,1 @@
-aiodns==3.0.0
 aioharmony==0.2.9
-aiohttp==3.8.1
-aiosignal==1.2.0
-async-timeout==4.0.2
-attrs==21.4.0
-cffi==1.15.0
-charset-normalizer==2.1.0
-frozenlist==1.3.0
-idna==3.3
-multidict==6.0.2
-pyasn1==0.4.8
-pyasn1-modules==0.2.8
-pycares==4.2.0
-pycparser==2.21
-slixmpp==1.8.2
-yarl==1.7.2
