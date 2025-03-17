@@ -1,1 +1,2 @@
 aioharmony==0.2.9
+slixmpp==1.8.4
