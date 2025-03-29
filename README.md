@@ -13,14 +13,6 @@ This plugin enables monitoring of certain activities on the Harmony Hub, and pro
 | Hardware Interface     | None       |
 
 
-## Installation Instructions
-
-This plugin uses compiled Python3 libraries.  You must have Xcode installed to install these libraries.
-
-In Terminal.app enter:
-
-`pip3 install aioharmony`
-
 The plugin can use either WebSockets or XMPP for communication with the Hubs.  The default is WebSockets, but can be changed in the plugin Preferences dialog.  See https://support.logi.com/hc/en-001/community/posts/360032837213-Update-to-accessing-Harmony-Hub-s-local-API-via-XMPP 
 for instructions.
 
